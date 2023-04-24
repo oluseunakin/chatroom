@@ -1,8 +1,7 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { Chat, Conversation, Room, User } from "../../type";
-import roomname from "../roomname";
 
-const baseUrl = "http://localhost:3000/";
+const baseUrl = "https://roomserver2.onrender.com";
 
 export const apiSlice = createApi({
   baseQuery: fetchBaseQuery({ baseUrl }),
