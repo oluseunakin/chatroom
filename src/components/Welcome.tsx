@@ -5,7 +5,6 @@ import {
   useCreateRoomMutation,
   useGetAllRoomsQuery,
   useGetUserQuery,
-  useUpdateUserMutation,
 } from "../features/api/apiSlice";
 import { RoomComponent, RoomExcerpt } from "../features/room/Room";
 import {
