@@ -67,17 +67,10 @@ header + div {
 .chat > div:first-of-type {
   position: relative;
 }
-.chat button > span {
-  background-color: cadetblue;
-}
-.chat button {
-  position: absolute;
-  right: 0px;
-  border-bottom-right-radius: 0;
-}
 .chat > div:last-child {
   display: flex;
   justify-content: center;
+  font-size: large;
 }
 .chat h4 {
   display: flex;

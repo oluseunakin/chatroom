@@ -34,7 +34,7 @@ export const ChatComponent = () => {
   });
   return (
     <div className="chat">
-      <div>
+      <div className="close">
         <button
           onClick={() => {
             dispatch(
