@@ -120,7 +120,6 @@ export function Welcome() {
         />
       )}
       <header>
-        <h1>{user.name}</h1>
         {menu.display && (
           <button
             className="material-symbols-outlined menu"
@@ -129,6 +128,7 @@ export function Welcome() {
             menu
           </button>
         )}
+        <h1>{user.name}</h1>
         {
           <div className={menuDiv()}>
             {user.name === "Oluseun" && (

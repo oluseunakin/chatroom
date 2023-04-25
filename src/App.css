@@ -242,7 +242,8 @@ header + div {
 }
 .menu {
   position: absolute;
-  right: 0;
+  right: 1vw;
+  top: 1vh;
 }
 .menudiv {
   background-color: cadetblue;
@@ -295,14 +296,11 @@ header + div {
     left: 70vw;
   }
 }
-header {
-  position: relative;
-}
 header > h1 {
   color: aquamarine;
-  position: absolute;
-  top: 6vh;
-  left: 16vw;
+  display: flex;
+  justify-content: center;
+  margin-top: 5vh;
 }
 @keyframes logo-spin {
   from {
