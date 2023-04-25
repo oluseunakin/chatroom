@@ -93,7 +93,7 @@ export function Welcome() {
       setRoomNotification({
         ...roomNotification,
         noti: [...roomNotification.noti, `${joiner} joined ${roomname}`],
-        count: roomNotification.count + 1
+        count: roomNotification.count + 1,
       });
     });
 
@@ -133,7 +133,8 @@ export function Welcome() {
           <div className={menuDiv()}>
             {user.name === "Oluseun" && (
               <div className="create">
-                <input placeholder="Type the room name"
+                <input
+                  placeholder="Type the room name"
                   onChange={(e) => {
                     setRoomname(e.target.value);
                   }}
@@ -153,29 +154,32 @@ export function Welcome() {
               className="super"
               onClick={() => {
                 setShowNotification({ ...showNotification, chat: true });
-                setChatNotification({...chatNotification, count: 0})
+                setChatNotification({ ...chatNotification, count: 0 });
               }}
             >
               <span className="material-symbols-outlined">message</span>
-              {chatNotification.count > 0 && <div>{chatNotification.count}</div>}
+              {chatNotification.count > 0 && (
+                <div>{chatNotification.count}</div>
+              )}
             </button>
             <button
               className="super"
               onClick={() => {
-                setShowNotification({ ...showNotification, room: true })
-                setRoomNotification({...roomNotification, count: 0})
-              }
-              }
+                setShowNotification({ ...showNotification, room: true });
+                setRoomNotification({ ...roomNotification, count: 0 });
+              }}
             >
               <span className="material-symbols-outlined">manage_accounts</span>
-              {roomNotification.count > 0 && <div>{roomNotification.count}</div>}
+              {roomNotification.count > 0 && (
+                <div>{roomNotification.count}</div>
+              )}
             </button>
             <button
               onClick={(e) => {
                 dispatch(roomReset());
                 dispatch(userReset());
                 dispatch(chatReset());
-                dispatch(apiSlice.util.resetApiState())
+                dispatch(apiSlice.util.resetApiState());
                 socket.emit("offline", username);
               }}
             >
@@ -184,21 +188,24 @@ export function Welcome() {
           </div>
         }
       </header>
-      {enteredRoom.length > 0 && <RoomComponent />}
-      <div className="myrooms">
-        {rooms && rooms.map((room: Room, i: number) => (
-            <RoomExcerpt room={room} key={i} />
-          ))}
-      </div>
-      {roomsLoading ? (
-        <div>Loading rooms</div>
-      ) : (
-        <div className="allrooms">
-          {allrooms.map((room: Room, i: number) => (
-            <RoomExcerpt room={room} key={i} />
-          ))}
+      <div>
+        {enteredRoom.length > 0 && <RoomComponent />}
+        <div className="myrooms">
+          {rooms &&
+            rooms.map((room: Room, i: number) => (
+              <RoomExcerpt room={room} key={i} />
+            ))}
         </div>
-      )}
+        {roomsLoading ? (
+          <div>Loading rooms</div>
+        ) : (
+          <div className="allrooms">
+            {allrooms.map((room: Room, i: number) => (
+              <RoomExcerpt room={room} key={i} />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

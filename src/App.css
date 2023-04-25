@@ -15,7 +15,7 @@
 }
 body {
   background-color: darkslategrey;
-  color: darkgray;
+  color: black;
   padding: 5px;
   margin: 0;
 }
@@ -33,20 +33,30 @@ body {
   height: 8px;
   border-radius: 6px;
 }
-.myrooms,
+.myrooms {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  margin-bottom: 10vh;
+}
 .allrooms {
   display: flex;
   flex-wrap: wrap;
-  gap: 20px;
   justify-content: space-around;
   margin-top: 10vh;
+}
+header + div {
+  position: absolute;
+  top: 20vh;
+  left: 5vw;
+  right: 5vw;
 }
 .chat {
   display: flex;
   flex-direction: column;
   position: absolute;
   top: 20vh;
-  left: 70vw;
+  left: 1vw;
   bottom: 1vh;
   right: 1vw;
   box-shadow: 4px 4px 7px rgba(0, 0, 0, 0.4);
@@ -232,8 +242,7 @@ body {
 }
 .menu {
   position: absolute;
-  right: 10px;
-  top: 10px;
+  right: 0;
 }
 .menudiv {
   background-color: cadetblue;
@@ -247,6 +256,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  z-index: 50;
 }
 .notmenudiv {
   display: none;
@@ -257,8 +267,8 @@ body {
   gap: 20px;
   justify-content: center;
   align-items: center;
-  height: 95vh;
-  color: aliceblue;
+  height: 90vh;
+  color: burlywood;
 }
 .creatediv > label {
   font-size: 5vw;
@@ -281,19 +291,18 @@ body {
     font-size: x-large;
     letter-spacing: 2px;
   }
+  .chat{
+    left: 70vw;
+  }
 }
 header {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  margin-bottom: 10vh;
-  
+  position: relative;
 }
 header > h1 {
-  padding-top: 15px;
   color: aquamarine;
-  display: flex;
-  justify-content: center;
+  position: absolute;
+  top: 6vh;
+  left: 16vw;
 }
 @keyframes logo-spin {
   from {

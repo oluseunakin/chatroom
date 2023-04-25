@@ -15,7 +15,7 @@ export default function CreateUser() {
       <input
         ref={nameRef}
         id="user"
-        placeholder="Enter the Room"
+        placeholder="Wole Si Gbagede"
         onKeyUp={async (e) => {
           if (e.key === "Enter") {
             const name = nameRef.current!.value;
