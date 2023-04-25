@@ -47,8 +47,8 @@ export const ChatComponent = () => {
         >
           <span className="material-symbols-outlined">close</span>
         </button>
+        <h3>{receiver}</h3>
       </div>
-      <h4>{receiver}</h4>
       <div>
         {messages.map((message, i, arr) => {
           const last = i === 0 ? message : arr[i - 1];
@@ -81,6 +81,7 @@ export const ChatComponent = () => {
           placeholder="Chat"
           ref={chatRef}
           onKeyUp={(e) => {
+            console.log(e.key)
             if (e.key === "Enter") {
               const c: Message = {
                 text: chatRef.current!.value,

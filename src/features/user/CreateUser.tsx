@@ -9,7 +9,9 @@ export default function CreateUser() {
   const dispatch = useDispatch<AppDispatch>();
   const [createUser, { isLoading }] = useCreateUserMutation();
 
-  return (
+  return isLoading ? (
+    <h3 className="creatediv">Loading</h3>
+  ) : (
     <div className="creatediv">
       <label htmlFor="user">Enter your name then press Enter</label>
       <input
