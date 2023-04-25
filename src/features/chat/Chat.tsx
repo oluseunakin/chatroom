@@ -30,23 +30,25 @@ export const ChatComponent = () => {
   }
 
   socket.on("receiveChat", (chat: Message) => {
-    setChats([...chats, chat])
+    setChats([...chats, chat]);
   });
   return (
     <div className="chat">
-      <div className="close">
-        <button
-          onClick={() => {
-            dispatch(
-              setChat((chat: { showChat: boolean; receiver: string }) => ({
-                ...chat,
-                showChat: true,
-              }))
-            );
-          }}
-        >
-          <span className="material-symbols-outlined">close</span>
-        </button>
+      <div>
+        <div>
+          <button
+            onClick={() => {
+              dispatch(
+                setChat((chat: { showChat: boolean; receiver: string }) => ({
+                  ...chat,
+                  showChat: true,
+                }))
+              );
+            }}
+          >
+            <span className="material-symbols-outlined">close</span>
+          </button>
+        </div>
         <h3>{receiver}</h3>
       </div>
       <div>
@@ -63,7 +65,8 @@ export const ChatComponent = () => {
         })}
         {chats.length > 0 &&
           chats.map((rc, i) => {
-            return i === 0 && messages.length > 0 &&
+            return i === 0 &&
+              messages.length > 0 &&
               messages[messages.length - 1].createdAt !== rc.createdAt ? (
               <div key={i}>
                 <h5>{rc.createdAt}</h5>
@@ -81,14 +84,14 @@ export const ChatComponent = () => {
           placeholder="Chat"
           ref={chatRef}
           onKeyUp={(e) => {
-            console.log(e.key)
+            console.log(e.key);
             if (e.key === "Enter") {
               const c: Message = {
                 text: chatRef.current!.value,
                 createdAt: new Date().toDateString(),
                 sender,
               };
-              chatRef.current!.value = ''
+              chatRef.current!.value = "";
               socket.emit("chat", receiver, c);
               setChats([...chats, c]);
             }

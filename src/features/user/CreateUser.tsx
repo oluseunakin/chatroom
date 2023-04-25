@@ -10,7 +10,7 @@ export default function CreateUser() {
   const [createUser, { isLoading }] = useCreateUserMutation();
 
   return isLoading ? (
-    <h3 className="creatediv">Loading</h3>
+    <i className="creatediv loading-spinner"></i>
   ) : (
     <div className="creatediv">
       <label htmlFor="user">Enter your name then press Enter</label>
