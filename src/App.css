@@ -150,18 +150,17 @@ header + div {
 }
 .enteredroom {
   position: absolute;
-  top: 7vh;
-  left: 5vw;
-  right: 5vw;
   background-color: cadetblue;
   box-shadow: 1px 1px 4px lightyellow;
   z-index: 100;
 }
 .header {
   display: flex;
-  gap: 30px;
-  align-items: baseline;
   justify-content: center;
+}
+.header > div {
+  display: flex;
+  justify-content: space-between;
 }
 .header h2 {
   letter-spacing: 5px;
@@ -177,6 +176,7 @@ header + div {
   border-bottom-right-radius: 0;
   border-top-right-radius: 0;
   background-color: cornsilk;
+  margin-bottom: 13px;
 }
 .close button span {
   background-color: burlywood;
@@ -203,18 +203,23 @@ header + div {
   width: 100%;
 }
 .convo > div:last-child button {
-  background-color: azure;
+  background-color: cornsilk;
+}
+.convo > div:last-child span {
+  background-color: #deb887;
 }
 .conversations {
   background-color: antiquewhite;
   padding: 1em;
-  margin: 15px;
 }
 .conversations > div {
   border-radius: 50px 0 0 50px;
   border: 1px solid cadetblue;
   padding-left: 38px;
-  margin: 10px;
+  margin-bottom: 10px;
+}
+.conversations h4 {
+  margin: 5px;
 }
 .conversations > div > div > div:last-of-type {
   padding: 5px 0;
@@ -228,8 +233,8 @@ header + div {
   flex: 1;
 }
 .create > span {
-  margin-left: -26px;
-  margin-top: 10px;
+  margin-left: -32px;
+  margin-top: 5px;
 }
 .create > span:hover {
   cursor: pointer;
@@ -250,13 +255,12 @@ header + div {
   padding: 2em;
   border: 1px solid transparent;
   position: fixed;
-  top: 7vh;
+  top: 9vh;
   left: 5px;
   right: 5px;
   gap: 2vh;
   display: flex;
   flex-direction: column;
-  align-items: center;
   z-index: 50;
 }
 .notmenudiv {
@@ -301,6 +305,7 @@ header > h1 {
   display: flex;
   justify-content: center;
   margin-top: 5vh;
+  font-weight: bold;
 }
 @keyframes logo-spin {
   from {

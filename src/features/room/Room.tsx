@@ -107,10 +107,12 @@ export function RoomComponent() {
         </button>
       </div>
       <div className="header">
+        <div>
         <h2>{enteredRoom}</h2>
         <button onClick={() => setShowUsers(!showUsers)}>
           <span className="material-symbols-outlined">group</span>
         </button>
+        </div>
       </div>
       <div className="convo">
         {showUsers && (
