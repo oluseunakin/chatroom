@@ -16,7 +16,7 @@ import { getUser, reset as userReset } from "../features/user/userStore";
 import { RootState } from "../store";
 import type { Conversation, Message, Room } from "../type";
 import { transformEntityState } from "../helper";
-import { socket } from "../features/chat/socket";
+import { socket } from "../features/socket";
 import { getShowChat, reset as chatReset } from "../features/chat/chatStore";
 import { ChatComponent } from "../features/chat/Chat";
 import { RoomNotification } from "../features/notifications/RoomNotification";

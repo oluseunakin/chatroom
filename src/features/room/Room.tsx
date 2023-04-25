@@ -9,7 +9,7 @@ import { setRoomname } from "../roomname";
 import { getMyRooms, joinRoom } from "./roomStore";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { getUser } from "../user/userStore";
-import { socket } from "../chat/socket";
+import { socket } from "../socket";
 import { ConversationComponent } from "../../components/Conversation";
 import { setChat } from "../chat/chatStore";
 

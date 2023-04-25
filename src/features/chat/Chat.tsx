@@ -4,7 +4,7 @@ import { getUser } from "../user/userStore";
 import type { RootState } from "../../store";
 import type { Message } from "../../type";
 import { useMemo, useRef, useState } from "react";
-import { socket } from "./socket";
+import { socket } from "../socket";
 import { getReceiver, setChat } from "./chatStore";
 
 export const ChatComponent = () => {
