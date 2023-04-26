@@ -84,8 +84,8 @@ export const ChatComponent = () => {
           placeholder="Chat"
           ref={chatRef}
           onKeyUp={(e) => {
-            console.log(e.key);
             if (e.key === "Enter") {
+              e.preventDefault()
               const c: Message = {
                 text: chatRef.current!.value,
                 createdAt: new Date().toDateString(),
