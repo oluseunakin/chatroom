@@ -63,7 +63,7 @@ export function Welcome() {
       socket.emit("rooms", user.myrooms, username);
       dispatch(setMyRoom(user.myrooms));
     }
-    if(enteredRoom.length > 0) document.getElementsByName('body')[0].classList.add('modal')
+    if(enteredRoom.length > 0) console.log(document)
   }, [user, enteredRoom.length]);
 
   useEffect(() => {
