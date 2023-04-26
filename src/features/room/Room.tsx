@@ -102,7 +102,7 @@ export function RoomComponent() {
 
   if (roomLoading) return <Spinner />
   return (
-    <div className={chatState? "active": "enteredroom"}>
+    <div className={chatState? "active enteredroom": "enteredroom"}>
       <div className="close">
         <button onClick={() => dispatch(setRoomname(""))}>
           <span className="material-symbols-outlined">close</span>
