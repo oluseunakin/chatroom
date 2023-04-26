@@ -158,7 +158,7 @@ body {
   backdrop-filter: blur(5px);
   pointer-events: auto;
 }
-body.modal{
+.active{
   pointer-events: none;
 }
 .header {

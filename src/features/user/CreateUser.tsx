@@ -18,11 +18,11 @@ export default function CreateUser() {
         ref={nameRef}
         id="user"
         placeholder="Wole Si Gbagede"
-        onKeyUp={async (e) => {
+        onKeyUp={(e) => {
           if (e.key === "Enter") {
-            const name = nameRef.current!.value;
-            const newuser = await createUser({ name }).unwrap();
-            dispatch(setUser(newuser.name));
+            const name = nameRef.current!.value; 
+            dispatch(setUser(name));
+            createUser({ name }).unwrap();
           }
         }}
       />

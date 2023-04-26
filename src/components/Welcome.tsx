@@ -63,8 +63,7 @@ export function Welcome() {
       socket.emit("rooms", user.myrooms, username);
       dispatch(setMyRoom(user.myrooms));
     }
-    if(enteredRoom.length > 0) console.log(document)
-  }, [user, enteredRoom.length]);
+  }, [user]);
 
   useEffect(() => {
     socket.connect();
@@ -105,7 +104,7 @@ export function Welcome() {
   }
   if (userLoading) return <div>Loading User</div>;
   return (
-    <div>
+    <div className={enteredRoom.length > 0 ? 'active': ''}>
       {showChat && <ChatComponent />}
       {showNotification.room && (
         <RoomNotification
