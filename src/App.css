@@ -151,12 +151,14 @@ body {
   background-color: rgba(0,0,0,0.5);
   box-shadow: 1px 1px 4px lightyellow;
   z-index: 100;
-  position: fixed;
+  position: absolute;
   top: 5vh;
-  transform: translate(-50%, -50%);
   width: 98%;
   max-width: 1280px;
   backdrop-filter: blur(5px);
+  pointer-events: auto;
+}
+body.modal{
   pointer-events: none;
 }
 .header {
@@ -305,7 +307,7 @@ body {
   header > h1:first-of-type {
     margin: 5px 0;
   }
-  header + div {
+  .r {
     top: 30vh;
   }
 }
