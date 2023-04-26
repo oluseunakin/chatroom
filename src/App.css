@@ -56,8 +56,9 @@ body {
   box-shadow: 1px 1px 4px lightyellow;
   z-index: 1000;
   position: absolute;
-  top: 5vh;
+  top: 1vh;
   width: 98%;
+  bottom: 1vh;
   max-width: 1280px;
   backdrop-filter: blur(5px);
   pointer-events: auto;
@@ -81,6 +82,7 @@ body {
 .chat > div:last-child input {
   font-size: larger;
   background-color: wheat;
+  color: gray;
 }
 .chat h3 {
   display: flex;
@@ -152,7 +154,7 @@ body {
   box-shadow: 1px 1px 4px lightyellow;
   z-index: 100;
   position: absolute;
-  top: 5vh;
+  top: 1vh;
   width: 98%;
   max-width: 1280px;
   backdrop-filter: blur(5px);
@@ -221,7 +223,7 @@ body {
   border-radius: 50px 0 0 50px;
   border: 1px solid cadetblue;
   padding-left: 38px;
-  margin-bottom: 10px;
+  margin-bottom: 20px;
 }
 .conversations h4 {
   margin: 5px;
@@ -303,7 +305,6 @@ body {
   }
   .chat{
     left: 67vw;
-    bottom: 5px;
     width: 31vw;
   }
   header > h1:first-of-type {
