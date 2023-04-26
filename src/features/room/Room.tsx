@@ -12,6 +12,8 @@ import { getUser } from "../user/userStore";
 import { socket } from "../socket";
 import { ConversationComponent } from "../../components/Conversation";
 import { setChat } from "../chat/chatStore";
+import { Spinner } from "../../components/Spinner";
+import { getShowChat } from "../chat/chatStore";
 
 export function RoomExcerpt(props: { room: Room }) {
   const user = useSelector<RootState, string>((state) => getUser(state));
@@ -62,7 +64,7 @@ export function RoomComponent() {
   }, [room]);
   const sayRef = useRef<HTMLTextAreaElement>(null);
   const [status, setStatus] = useState<boolean[]>([]);
-
+  const chatState = useSelector<RootState, boolean>(state => getShowChat(state))
   useEffect(() => {
     if (room) {
       setStatus(Array(users.length).fill(false));
@@ -98,9 +100,9 @@ export function RoomComponent() {
   });
   socket.on("message", (data) => {setNewConversations([...newConversations, data]);});
 
-  if (roomLoading) return <div>Room is loading</div>;
+  if (roomLoading) return <Spinner />
   return (
-    <div className="enteredroom">
+    <div className={chatState? "active": "enteredroom"}>
       <div className="close">
         <button onClick={() => dispatch(setRoomname(""))}>
           <span className="material-symbols-outlined">close</span>

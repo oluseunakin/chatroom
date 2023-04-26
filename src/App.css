@@ -52,17 +52,15 @@ body {
   right: 5vw;
 }
 .chat {
-  display: flex;
-  flex-direction: column;
+  background-color: rgba(0,0,0,0.5);
+  box-shadow: 1px 1px 4px lightyellow;
+  z-index: 100;
   position: absolute;
-  top: 20vh;
-  left: 1vw;
-  bottom: 1vh;
-  right: 1vw;
-  box-shadow: 4px 4px 7px rgba(0, 0, 0, 0.4);
-  background-color: cadetblue;
-  border-radius: 10px;
-  z-index: 10000;
+  top: 5vh;
+  width: 98%;
+  max-width: 1280px;
+  backdrop-filter: blur(5px);
+  pointer-events: auto;
 }
 .chat > div:first-of-type {
   border-bottom: 3px solid darkcyan;
