@@ -188,8 +188,8 @@ export function Welcome() {
           </div>
         }
       </header>
-      <div>
-        {enteredRoom.length > 0 && <RoomComponent />}
+      {enteredRoom.length > 0 && <RoomComponent />}
+      <div className="r">  
         <div className="myrooms">
           {rooms &&
             rooms.map((room: Room, i: number) => (
