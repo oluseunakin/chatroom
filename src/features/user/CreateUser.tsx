@@ -3,6 +3,7 @@ import { useDispatch } from "react-redux";
 import { AppDispatch } from "../../store";
 import { useCreateUserMutation } from "../api/apiSlice";
 import { setUser } from "./userStore";
+import { Spinner } from "../../components/Spinner";
 
 export default function CreateUser() {
   const nameRef = useRef<HTMLInputElement>(null);
@@ -10,7 +11,7 @@ export default function CreateUser() {
   const [createUser, { isLoading }] = useCreateUserMutation();
 
   return isLoading ? (
-    <i className="creatediv loading-spinner"></i>
+    <Spinner />
   ) : (
     <div className="creatediv">
       <label htmlFor="user">Enter your name then press Enter</label>

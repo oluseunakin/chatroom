@@ -21,6 +21,7 @@ import { getShowChat, reset as chatReset } from "../features/chat/chatStore";
 import { ChatComponent } from "../features/chat/Chat";
 import { RoomNotification } from "../features/notifications/RoomNotification";
 import { ChatNotification } from "../features/notifications/ChatNotification";
+import { Spinner } from "./Spinner";
 
 export function Welcome() {
   const dispatch = useDispatch();
@@ -102,7 +103,8 @@ export function Welcome() {
     if (menu.clicked) r = "menudiv";
     return r;
   }
-  if (userLoading) return <div>Loading User</div>;
+  if (userLoading || roomLoading) return <Spinner />;
+
   return (
     <div className={enteredRoom.length > 0 ? 'active': ''}>
       {showChat && <ChatComponent />}
@@ -197,7 +199,7 @@ export function Welcome() {
             ))}
         </div>
         {roomsLoading ? (
-          <div>Loading rooms</div>
+          <Spinner />
         ) : (
           <div className="allrooms">
             {allrooms.map((room: Room, i: number) => (
