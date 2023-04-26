@@ -52,9 +52,9 @@ body {
   right: 5vw;
 }
 .chat {
-  background-color: rgba(0,0,0,0.5);
+  background-color: rgba(95,158,160,0.5);
   box-shadow: 1px 1px 4px lightyellow;
-  z-index: 100;
+  z-index: 1000;
   position: absolute;
   top: 5vh;
   width: 98%;
@@ -97,7 +97,7 @@ body {
   padding: 10px;
 }
 .notifications {
-  z-index: 1000;
+  z-index: 1001;
   border: 1px solid;
   position: absolute;
   left: 20px;
@@ -173,7 +173,7 @@ body {
 }
 .close {
   display: flex;
-  border-bottom: 3px solid darkcyan;
+  border-bottom: 3px solid lemonchiffon;
   margin-bottom: 12px;
   justify-content: end;
 }
@@ -266,7 +266,7 @@ body {
   gap: 2vh;
   display: flex;
   flex-direction: column;
-  z-index: 50;
+  z-index: 1001;
 }
 .notmenudiv {
   display: none;
