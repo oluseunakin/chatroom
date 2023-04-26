@@ -148,10 +148,15 @@ header + div {
   justify-content: center;
 }
 .enteredroom {
-  position: absolute;
   background-color: cadetblue;
   box-shadow: 1px 1px 4px lightyellow;
   z-index: 100;
+  position: fixed;
+  top: 5vh;
+  transform: translate(-50%, -50%);
+  width: 98%;
+  max-width: 1280px;
+  backdrop-filter: blur(5px);
 }
 .header {
   display: flex;
@@ -296,7 +301,7 @@ header + div {
   .chat{
     left: 70vw;
   }
-  header > h1 {
+  header > h1:first-of-type {
     margin: 5px 0;
   }
   header + div {
