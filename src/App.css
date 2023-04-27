@@ -38,12 +38,13 @@ body {
   flex-wrap: wrap;
   justify-content: space-around;
   margin-bottom: 10vh;
+  gap: 10px;
 }
 .allrooms {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-around;
-  margin-top: 10vh;
+  gap: 10px;
 }
 .r {
   position: absolute;
@@ -52,12 +53,12 @@ body {
   right: 5vw;
 }
 .chat {
-  background-color: rgba(95,158,160,0.5);
+  background-color: rgb(95,158,160);
   box-shadow: 1px 1px 4px lightyellow;
   z-index: 1000;
   position: absolute;
   top: 1vh;
-  width: 98%;
+  right: 1vw;
   bottom: 1vh;
   max-width: 1280px;
   backdrop-filter: blur(5px);
@@ -93,10 +94,10 @@ body {
 .chat > div:nth-of-type(2) {
   border: 1px solid transparent;
   background-color: white;
-  margin: 10px;
-  height: 70%;
+  
+  height: 64%;
   overflow: auto;
-  padding: 10px;
+  
 }
 .notifications {
   z-index: 1001;
@@ -128,17 +129,15 @@ body {
   align-items: center;
 }
 .receiver {
-  border: 1px solid;
   padding: 5px;
-  margin: 5% 0 5% 9%;
+  margin: 5% 2% 5% 9%;
   border-radius: 13px;
   background-color: lightcyan;
   color: brown;
 }
 .sender {
-  border: 1px solid;
   padding: 5px;
-  margin: 5% 9% 5% 0;
+  margin: 5% 9% 5% 2%;
   border-radius: 13px;
   color: antiquewhite;
   background-color: darkcyan;
@@ -155,7 +154,8 @@ body {
   z-index: 100;
   position: absolute;
   top: 1vh;
-  width: 98%;
+  left: 1vw;
+  right: 1vw;
   max-width: 1280px;
   backdrop-filter: blur(5px);
   pointer-events: auto;
@@ -306,6 +306,7 @@ body {
   .chat{
     left: 67vw;
     width: 31vw;
+    top: 21vh;
   }
   header > h1:first-of-type {
     margin: 5px 0;
