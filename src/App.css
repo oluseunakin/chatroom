@@ -60,6 +60,7 @@ body {
   top: 1vh;
   right: 1vw;
   bottom: 1vh;
+  left: 1vw;
   max-width: 1280px;
   backdrop-filter: blur(5px);
   pointer-events: auto;
@@ -94,8 +95,7 @@ body {
 .chat > div:nth-of-type(2) {
   border: 1px solid transparent;
   background-color: white;
-  
-  height: 64%;
+  height: 68%;
   overflow: auto;
   
 }

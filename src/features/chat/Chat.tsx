@@ -14,7 +14,7 @@ export const ChatComponent = () => {
   );
   const [chats, setChats] = useState<Message[]>([]);
   const sender = useSelector<RootState, string>((state) => getUser(state));
-  const chatRef = useRef<HTMLInputElement>(null);
+  const chatRef = useRef<HTMLTextAreaElement>(null);
   const { data: chatFromServer, isLoading: chatLoading } = useGetChatQuery({
     sender,
     receiver,
@@ -80,23 +80,31 @@ export const ChatComponent = () => {
           })}
       </div>
       <div>
-        <input
+        <textarea
           placeholder="Chat"
           ref={chatRef}
           onKeyUp={(e) => {
             if (e.key === "Enter") {
-              e.preventDefault()
-              const c: Message = {
-                text: chatRef.current!.value,
-                createdAt: new Date().toDateString(),
-                sender,
-              };
-              chatRef.current!.value = "";
-              socket.emit("chat", receiver, c);
-              setChats([...chats, c]);
+              const inp = chatRef.current!;
+              const length = inp.value.length;
+              if (length === inp.selectionEnd - 2) inp.rows += 1;
             }
           }}
-        />
+        ></textarea>
+        <button
+          onClick={async () => {
+            const c: Message = {
+              text: chatRef.current!.value,
+              createdAt: new Date().toDateString(),
+              sender,
+            };
+            chatRef.current!.value = "";
+            socket.emit("chat", receiver, c);
+            setChats([...chats, c]);
+          }}
+        >
+          <span className="material-symbols-outlined">send</span>
+        </button>
       </div>
     </div>
   );

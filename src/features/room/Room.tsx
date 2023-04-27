@@ -2,9 +2,7 @@ import type { EntityState } from "@reduxjs/toolkit";
 import { useDispatch, useSelector } from "react-redux";
 import type { RootState } from "../../store";
 import type { Conversation, Message, Room, User } from "../../type";
-import {
-  useGetRoomWithUsersQuery,
-} from "../api/apiSlice";
+import { useGetRoomWithUsersQuery } from "../api/apiSlice";
 import { setRoomname } from "../roomname";
 import { getMyRooms, joinRoom } from "./roomStore";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -38,7 +36,7 @@ export function RoomExcerpt(props: { room: Room }) {
         <button
           onClick={() => {
             dispatch(joinRoom({ name: room.name }));
-            socket.emit('joinroom', room.name, user)
+            socket.emit("joinroom", room.name, user);
           }}
         >
           <span className="material-symbols-outlined">group_add</span>
@@ -64,7 +62,9 @@ export function RoomComponent() {
   }, [room]);
   const sayRef = useRef<HTMLTextAreaElement>(null);
   const [status, setStatus] = useState<boolean[]>([]);
-  const chatState = useSelector<RootState, boolean>(state => getShowChat(state))
+  const chatState = useSelector<RootState, boolean>((state) =>
+    getShowChat(state)
+  );
   useEffect(() => {
     if (room) {
       setStatus(Array(users.length).fill(false));
@@ -75,34 +75,37 @@ export function RoomComponent() {
   }, [room]);
   useEffect(() => {
     if (room) {
-      socket.on("goneoff", (offed) => {
-        const offedIndex = users.findIndex(
-          (user: User, i: number) => user.name === offed
-        );
-        setStatus((status) => {
-          const nstatus = [...status];
-          nstatus[offedIndex] = false;
-          return nstatus;
-        });
-      }).on("comeon", (oned) => {
-        const onedIndex = users.findIndex(
-          (user: User, i: number) => user.name === oned
-        );
-        setStatus((status) => {
-          const nstatus = [...status];
-          nstatus[onedIndex] = true;
-          return nstatus;
-        });
-      }).on('joinedroom', (joiner: string) => {
-        
-      });
+      socket
+        .on("goneoff", (offed) => {
+          const offedIndex = users.findIndex(
+            (user: User, i: number) => user.name === offed
+          );
+          setStatus((status) => {
+            const nstatus = [...status];
+            nstatus[offedIndex] = false;
+            return nstatus;
+          });
+        })
+        .on("comeon", (oned) => {
+          const onedIndex = users.findIndex(
+            (user: User, i: number) => user.name === oned
+          );
+          setStatus((status) => {
+            const nstatus = [...status];
+            nstatus[onedIndex] = true;
+            return nstatus;
+          });
+        })
+        .on("joinedroom", (joiner: string) => {});
     }
   });
-  socket.on("message", (data) => {setNewConversations([...newConversations, data]);});
+  socket.on("message", (data) => {
+    setNewConversations([...newConversations, data]);
+  });
 
-  if (roomLoading) return <Spinner />
+  if (roomLoading) return <Spinner />;
   return (
-    <div className={chatState? "active enteredroom": "enteredroom"}>
+    <div className={chatState ? "active enteredroom" : "enteredroom"}>
       <div className="close">
         <button onClick={() => dispatch(setRoomname(""))}>
           <span className="material-symbols-outlined">close</span>
@@ -122,7 +125,9 @@ export function RoomComponent() {
                 key={i}
                 value={user.name}
                 onClick={(e) => {
-                  dispatch(setChat({receiver: e.currentTarget.value, showChat: true}));
+                  dispatch(
+                    setChat({ receiver: e.currentTarget.value, showChat: true })
+                  );
                 }}
               >
                 {user.name}{" "}
@@ -138,12 +143,23 @@ export function RoomComponent() {
             ))}
             {newConversations &&
               newConversations.map((nc, i) => (
-                <ConversationComponent convo={nc} key={i+room.conversations.length} />
+                <ConversationComponent
+                  convo={nc}
+                  key={i + room.conversations.length}
+                />
               ))}
           </div>
         )}
         <div>
-          <textarea ref={sayRef} placeholder="hello" />
+          <textarea
+            ref={sayRef}
+            placeholder="hello"
+            onKeyUp={(e) => {
+              const inp = sayRef.current!;
+              const length = inp.value.length;
+              if (length === inp.selectionEnd - 2) inp.rows += 1;
+            }}
+          />
           <button
             onClick={async () => {
               const said = sayRef.current?.value!;
@@ -158,7 +174,7 @@ export function RoomComponent() {
                 message,
               };
               socket.emit("receivedRoomMessage", conversation);
-              sayRef.current!.value = ''
+              sayRef.current!.value = "";
             }}
           >
             <span className="material-symbols-outlined">send</span>
