@@ -81,10 +81,17 @@ body {
   font-size: large;
   margin-top: 10px;
 }
-.chat > div:last-child input {
+.chat > div:last-child textarea {
   font-size: larger;
   background-color: wheat;
   color: gray;
+}
+.chat > div:last-child span {
+  margin-left: -25px;
+  color: chocolate;
+}
+.chat > div:last-child span:hover {
+  cursor: pointer;
 }
 .chat h3 {
   display: flex;
@@ -93,11 +100,9 @@ body {
   margin-bottom: 10px;
 }
 .chat > div:nth-of-type(2) {
-  border: 1px solid transparent;
   background-color: white;
-  height: 68%;
+  height: 78%;
   overflow: auto;
-  
 }
 .notifications {
   z-index: 1001;
@@ -188,11 +193,6 @@ body {
 .close button span {
   background-color: burlywood;
 }
-.convo {
-  border: 1px solid blanchedalmond;
-  margin: 20px;
-  padding: 10px;
-}
 .convo > .users {
   display: flex;
   justify-content: space-around;
@@ -209,14 +209,16 @@ body {
 .convo > div:last-child textarea {
   width: 100%;
 }
-.convo > div:last-child button {
-  background-color: cornsilk;
-}
 .convo > div:last-child span {
-  background-color: #deb887;
+  color: chocolate;
+  margin-left: -51px;
+}
+.convo > div:last-child span:hover {
+  cursor: pointer;;
 }
 .conversations {
-  background-color: antiquewhite;
+  background-color: honeydew;
+ 
   padding: 1em;
 }
 .conversations > div {

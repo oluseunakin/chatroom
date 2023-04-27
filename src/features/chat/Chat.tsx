@@ -87,11 +87,12 @@ export const ChatComponent = () => {
             if (e.key === "Enter") {
               const inp = chatRef.current!;
               const length = inp.value.length;
+              console.log(inp.selectionEnd - 2)
               if (length === inp.selectionEnd - 2) inp.rows += 1;
             }
           }}
         ></textarea>
-        <button
+        <span
           onClick={async () => {
             const c: Message = {
               text: chatRef.current!.value,
@@ -102,9 +103,10 @@ export const ChatComponent = () => {
             socket.emit("chat", receiver, c);
             setChats([...chats, c]);
           }}
+          className="material-symbols-outlined"
         >
-          <span className="material-symbols-outlined">send</span>
-        </button>
+          send
+        </span>
       </div>
     </div>
   );

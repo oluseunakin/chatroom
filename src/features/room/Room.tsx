@@ -160,7 +160,7 @@ export function RoomComponent() {
               if (length === inp.selectionEnd - 2) inp.rows += 1;
             }}
           />
-          <button
+          <span
             onClick={async () => {
               const said = sayRef.current?.value!;
               const message: Message = {
@@ -176,9 +176,10 @@ export function RoomComponent() {
               socket.emit("receivedRoomMessage", conversation);
               sayRef.current!.value = "";
             }}
+            className="material-symbols-outlined"
           >
-            <span className="material-symbols-outlined">send</span>
-          </button>
+            send
+          </span>
         </div>
       </div>
     </div>
