@@ -34,7 +34,7 @@ export const ChatComponent = () => {
     setChats([...chats, chat]);
   });
   useEffect(() => {
-    const height = divRef.current!.clientHeight
+    const height = divRef.current!
     console.log(height)
     //window.scrollTo(0, height)
   }, [chats])
