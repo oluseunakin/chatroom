@@ -164,8 +164,11 @@ export function RoomComponent() {
               const inp = sayRef.current!;
               const style = window.getComputedStyle(inp);
               const charWidth = parseFloat(style.getPropertyValue("font-size")) * 0.6;
-              const maxWidth = Math.floor(inp.clientWidth / charWidth);
-              console.log(maxWidth)
+              let maxWidth = Math.floor(inp.clientWidth / charWidth);
+              if (inp.selectionEnd === maxWidth - 2) {
+                inp.setSelectionRange(maxWidth++,maxWidth)
+                inp.focus()
+              }
             }}
           />
           <span

@@ -89,10 +89,9 @@ export const ChatComponent = () => {
             const length = inp.value.length;
             const style = window.getComputedStyle(inp)
             const charWidth = parseFloat(style.getPropertyValue("font-size")) * 0.6;
-            const maxWidth = Math.floor(inp.clientWidth / charWidth);
-            
-            if (inp.selectionEnd === maxWidth - 2) {console.log(maxWidth)
-              inp.setSelectionRange(0,0)
+            let maxWidth = Math.floor(inp.clientWidth / charWidth);
+            if (inp.selectionEnd === maxWidth - 2) {
+              inp.setSelectionRange(maxWidth++,maxWidth)
               inp.focus()
             }
           }}
