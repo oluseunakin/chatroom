@@ -162,7 +162,8 @@ export function RoomComponent() {
             onKeyUp={(e) => {
               const inp = sayRef.current!;
               const length = inp.value.length;
-              if (length === inp.selectionEnd - 2) {
+              if (length === (inp.selectionEnd - 2)) {
+                console.log(length)
                 inp.setSelectionRange(0,0)
                 inp.focus()
               }
