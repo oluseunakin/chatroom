@@ -59,7 +59,7 @@ body {
   position: absolute;
   top: 1vh;
   right: 0;
-  bottom: 1vh;
+  bottom: 53vh;
   left: 0;
   border: 1px solid transparent;
   max-width: 1280px;
@@ -311,7 +311,6 @@ body {
     left: 65vw;
     width: 31vw;
     top: 21vh;
-    bottom: 53vh;
   }
   header > h1:first-of-type {
     margin: 5px 0;
