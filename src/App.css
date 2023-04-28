@@ -80,13 +80,11 @@ body {
   display: flex;
   justify-content: center;
   font-size: large;
-  margin: 100px;
-  margin-top: 2px;
-  background-color: wheat;
+  margin: 8px;
 }
 .chat > div:last-child textarea {
   font-size: larger;
-  background-color: wheat;
+  width: 100%;
   color: black;
   border: 0;
   resize: none;
@@ -105,7 +103,7 @@ body {
 }
 .chat > div:nth-of-type(2) {
   background-color: white;
-  height: 84%;
+  height: 77%;
   overflow: auto;
 }
 .notifications {
@@ -306,10 +304,14 @@ body {
     font-size: x-large;
     letter-spacing: 2px;
   }
+  .chat > div:nth-of-type(2) {
+    height: 70%;
+  }
   .chat{
-    left: 67vw;
+    left: 65vw;
     width: 31vw;
     top: 21vh;
+    bottom: 53vh;
   }
   header > h1:first-of-type {
     margin: 5px 0;
