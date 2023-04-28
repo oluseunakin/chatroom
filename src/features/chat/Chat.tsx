@@ -35,7 +35,8 @@ export const ChatComponent = () => {
   });
   useEffect(() => {
     const height = divRef.current!.clientHeight
-    window.scrollTo(0, height)
+    console.log(height)
+    //window.scrollTo(0, height)
   }, [chats])
   return (
     <div className="chat">
