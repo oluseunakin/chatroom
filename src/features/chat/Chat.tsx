@@ -80,26 +80,7 @@ export const ChatComponent = () => {
           })}
       </div>
       <div>
-        <textarea
-          placeholder="Chat"
-          rows={1}
-          ref={chatRef}
-          onKeyUp={(e) => {
-            const inp = chatRef.current!;
-            const length = inp.value.length;
-            const style = window.getComputedStyle(inp)
-            const charWidth = parseFloat(style.getPropertyValue("font-size")) * 0.6;
-            let maxWidth = Math.floor(inp.clientWidth / charWidth);
-            if (inp.selectionEnd === maxWidth - 2) {
-              inp.rows++
-              //console.log(inp.selectionStart)
-              const moveTo = inp.selectionStart + inp.cols + 1
-              console.log(moveTo)
-              inp.setSelectionRange(moveTo,moveTo)
-              inp.focus()
-            }
-          }}
-        ></textarea>
+        <textarea placeholder="Chat" rows={1} ref={chatRef}></textarea>
         <span
           onClick={async () => {
             const c: Message = {

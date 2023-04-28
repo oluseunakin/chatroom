@@ -64,7 +64,7 @@ export function RoomComponent() {
     }
     return [];
   }, [room]);
-  const sayRef = useRef<HTMLTextAreaElement>(null);
+  const sayRef = useRef<HTMLInputElement>(null);
   const [status, setStatus] = useState<boolean[]>([]);
   const chatState = useSelector<RootState, boolean>((state) =>
     getShowChat(state)
@@ -156,22 +156,7 @@ export function RoomComponent() {
           </div>
         )}
         <div>
-          <textarea
-            ref={sayRef}
-            rows={1}
-            placeholder="hello"
-            onKeyUp={(e) => {
-              const inp = sayRef.current!;
-              const style = window.getComputedStyle(inp);
-              const charWidth = parseFloat(style.getPropertyValue("font-size")) * 0.6;
-              let maxWidth = Math.floor(inp.clientWidth / charWidth);
-              if (inp.selectionEnd === maxWidth - 2) {
-                inp.rows++
-                inp.setSelectionRange(maxWidth++,maxWidth)
-                inp.focus()
-              }
-            }}
-          />
+          <input ref={sayRef} placeholder="hello"/>
           <span
             onClick={async () => {
               const said = sayRef.current?.value!;

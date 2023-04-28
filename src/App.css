@@ -80,15 +80,18 @@ body {
   display: flex;
   justify-content: center;
   font-size: large;
+  margin: 100px;
   margin-top: 2px;
+  background-color: wheat;
 }
 .chat > div:last-child textarea {
   font-size: larger;
   background-color: wheat;
-  color: gray;
+  color: black;
+  border: 0;
+  resize: none;
 }
 .chat > div:last-child span {
-  margin-left: -25px;
   color: chocolate;
 }
 .chat > div:last-child span:hover {
@@ -205,21 +208,18 @@ body {
   display: flex;
   align-items: center;
   margin: 15px;
-  gap: 20px;
 }
-.convo > div:last-child textarea {
+.convo > div:last-child input {
   width: 100%;
 }
 .convo > div:last-child span {
   color: chocolate;
-  margin-left: -51px;
 }
 .convo > div:last-child span:hover {
   cursor: pointer;;
 }
 .conversations {
   background-color: honeydew;
- 
   padding: 1em;
 }
 .conversations > div {
