@@ -84,11 +84,11 @@ export const ChatComponent = () => {
           placeholder="Chat"
           ref={chatRef}
           onKeyUp={(e) => {
-            if (e.key === "Enter") {
-              const inp = chatRef.current!;
-              const length = inp.value.length;
-              console.log(inp.selectionEnd - 2)
-              if (length === inp.selectionEnd - 2) inp.rows += 1;
+            const inp = chatRef.current!;
+            const length = inp.value.length;
+            if (length === inp.selectionEnd - 2) {
+              inp.setSelectionRange(0,0)
+              inp.focus()
             }
           }}
         ></textarea>

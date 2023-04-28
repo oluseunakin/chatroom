@@ -26,9 +26,6 @@ import { Spinner } from "./Spinner";
 export function Welcome() {
   const dispatch = useDispatch();
   const username = useSelector<RootState, string>((state) => getUser(state));
-  const showChat = useSelector<RootState, boolean>((state) =>
-    getShowChat(state)
-  );
   const rooms = useSelector<RootState, Room[]>((state) =>
     transformEntityState(getMyRooms(state))
   );
@@ -107,7 +104,6 @@ export function Welcome() {
 
   return (
     <div className={enteredRoom.length > 0 ? 'active': ''}>
-      {showChat && <ChatComponent />}
       {showNotification.room && (
         <RoomNotification
           convoNotifications={roomNotification.conversations!}

@@ -134,15 +134,15 @@ body {
   align-items: center;
 }
 .receiver {
-  padding: 5px;
-  margin: 5% 2% 5% 9%;
+  padding: 7px;
+  margin: 5% 2% 5% 15%;
   border-radius: 13px;
-  background-color: lightcyan;
+  background-color: aquamarine;
   color: brown;
 }
 .sender {
-  padding: 5px;
-  margin: 5% 9% 5% 2%;
+  padding: 7px;
+  margin: 5% 15% 5% 2%;
   border-radius: 13px;
   color: antiquewhite;
   background-color: darkcyan;
@@ -270,7 +270,7 @@ body {
   gap: 2vh;
   display: flex;
   flex-direction: column;
-  z-index: 1001;
+  z-index: 10;
 }
 .notmenudiv {
   display: none;

@@ -12,6 +12,7 @@ import { ConversationComponent } from "../../components/Conversation";
 import { setChat } from "../chat/chatStore";
 import { Spinner } from "../../components/Spinner";
 import { getShowChat } from "../chat/chatStore";
+import { ChatComponent } from "../chat/Chat";
 
 export function RoomExcerpt(props: { room: Room }) {
   const user = useSelector<RootState, string>((state) => getUser(state));
@@ -48,6 +49,9 @@ export function RoomExcerpt(props: { room: Room }) {
 
 export function RoomComponent() {
   const enteredRoom = useSelector<RootState, string>((state) => state.roomname);
+  const showChat = useSelector<RootState, boolean>((state) =>
+    getShowChat(state)
+  );
   const talkerName = useSelector<RootState, string>((state) => getUser(state));
   const dispatch = useDispatch();
   const { data: room, isLoading: roomLoading } =
@@ -106,6 +110,7 @@ export function RoomComponent() {
   if (roomLoading) return <Spinner />;
   return (
     <div className={chatState ? "active enteredroom" : "enteredroom"}>
+      {showChat && <ChatComponent />}
       <div className="close">
         <button onClick={() => dispatch(setRoomname(""))}>
           <span className="material-symbols-outlined">close</span>
@@ -157,7 +162,10 @@ export function RoomComponent() {
             onKeyUp={(e) => {
               const inp = sayRef.current!;
               const length = inp.value.length;
-              if (length === inp.selectionEnd - 2) inp.rows += 1;
+              if (length === inp.selectionEnd - 2) {
+                inp.setSelectionRange(0,0)
+                inp.focus()
+              }
             }}
           />
           <span
