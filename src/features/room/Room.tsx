@@ -161,12 +161,10 @@ export function RoomComponent() {
             placeholder="hello"
             onKeyUp={(e) => {
               const inp = sayRef.current!;
-              const length = inp.value.length;
-              console.log(`typing length: ${length}`)
-              console.log(`selection end: ${inp.selectionEnd}`)
-              if (length === (inp.selectionEnd - 2)) {
-                console.log(length)
-                inp.setSelectionRange(0,0)
+              const start = inp.selectionStart
+              let index = inp.value.indexOf('\n', start)
+              if (index !== -1) {
+                inp.setSelectionRange(index++,index)
                 inp.focus()
               }
             }}
