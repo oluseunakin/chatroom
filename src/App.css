@@ -104,7 +104,6 @@ body {
 }
 .chat > div:nth-of-type(2) {
   background-color: white;
-  height: 77%;
   overflow: auto;
 }
 .notifications {

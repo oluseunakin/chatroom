@@ -3,7 +3,7 @@ import { useGetChatQuery } from "../api/apiSlice";
 import { getUser } from "../user/userStore";
 import type { RootState } from "../../store";
 import type { Message } from "../../type";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { socket } from "../socket";
 import { getReceiver, setChat } from "./chatStore";
 
@@ -15,6 +15,7 @@ export const ChatComponent = () => {
   const [chats, setChats] = useState<Message[]>([]);
   const sender = useSelector<RootState, string>((state) => getUser(state));
   const chatRef = useRef<HTMLTextAreaElement>(null);
+  const divRef = useRef<HTMLDivElement>(null);
   const { data: chatFromServer, isLoading: chatLoading } = useGetChatQuery({
     sender,
     receiver,
@@ -32,6 +33,10 @@ export const ChatComponent = () => {
   socket.on("receiveChat", (chat: Message) => {
     setChats([...chats, chat]);
   });
+  useEffect(() => {
+    const height = divRef.current!.clientHeight
+    window.scrollTo(0, height)
+  }, [chats])
   return (
     <div className="chat">
       <div>
@@ -51,7 +56,7 @@ export const ChatComponent = () => {
         </div>
         <h3>{receiver}</h3>
       </div>
-      <div>
+      <div ref={divRef}>
         {messages.map((message, i, arr) => {
           const last = i === 0 ? message : arr[i - 1];
           return (
