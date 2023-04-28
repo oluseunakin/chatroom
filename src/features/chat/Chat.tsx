@@ -82,11 +82,16 @@ export const ChatComponent = () => {
       <div>
         <textarea
           placeholder="Chat"
+          rows={1}
           ref={chatRef}
           onKeyUp={(e) => {
             const inp = chatRef.current!;
             const length = inp.value.length;
-            if (length === inp.selectionEnd - 2) {
+            const style = window.getComputedStyle(inp)
+            const charWidth = parseFloat(style.getPropertyValue("font-size")) * 0.6;
+            const maxWidth = Math.floor(inp.clientWidth / charWidth);
+            
+            if (inp.selectionEnd === maxWidth - 2) {console.log(maxWidth)
               inp.setSelectionRange(0,0)
               inp.focus()
             }

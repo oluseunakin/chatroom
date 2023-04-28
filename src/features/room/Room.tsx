@@ -158,15 +158,14 @@ export function RoomComponent() {
         <div>
           <textarea
             ref={sayRef}
+            rows={1}
             placeholder="hello"
             onKeyUp={(e) => {
               const inp = sayRef.current!;
-              const start = inp.selectionStart
-              let index = inp.value.indexOf('\n', start)
-              if (index !== -1) {
-                inp.setSelectionRange(index++,index)
-                inp.focus()
-              }
+              const style = window.getComputedStyle(inp);
+              const charWidth = parseFloat(style.getPropertyValue("font-size")) * 0.6;
+              const maxWidth = Math.floor(inp.clientWidth / charWidth);
+              console.log(maxWidth)
             }}
           />
           <span
