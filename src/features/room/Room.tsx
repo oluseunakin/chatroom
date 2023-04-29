@@ -12,7 +12,6 @@ import { ConversationComponent } from "../../components/Conversation";
 import { setChat } from "../chat/chatStore";
 import { Spinner } from "../../components/Spinner";
 import { getShowChat } from "../chat/chatStore";
-import { ChatComponent } from "../chat/Chat";
 
 export function RoomExcerpt(props: { room: Room }) {
   const user = useSelector<RootState, string>((state) => getUser(state));
@@ -47,11 +46,8 @@ export function RoomExcerpt(props: { room: Room }) {
   );
 }
 
-export function RoomComponent() {
+export function RoomComponent(props: {showModal: Function}) {
   const enteredRoom = useSelector<RootState, string>((state) => state.roomname);
-  const showChat = useSelector<RootState, boolean>((state) =>
-    getShowChat(state)
-  );
   const talkerName = useSelector<RootState, string>((state) => getUser(state));
   const dispatch = useDispatch();
   const { data: room, isLoading: roomLoading } =
@@ -69,6 +65,9 @@ export function RoomComponent() {
   const chatState = useSelector<RootState, boolean>((state) =>
     getShowChat(state)
   );
+  useEffect(() => {
+    props.showModal()
+  }, [props.showModal])
   useEffect(() => {
     if (room) {
       setStatus(Array(users.length).fill(false));
@@ -109,8 +108,7 @@ export function RoomComponent() {
 
   if (roomLoading) return <Spinner />;
   return (
-    <div className={chatState ? "active enteredroom" : "enteredroom"}>
-      {showChat && <ChatComponent />}
+    <div className={chatState ? "active modal" : "modal"}>
       <div className="close">
         <button onClick={() => dispatch(setRoomname(""))}>
           <span className="material-symbols-outlined">close</span>

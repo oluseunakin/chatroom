@@ -1,5 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { Chat, Conversation, Room, User } from "../../type";
+import type { Chat, Conversation, Room, User } from "../../type";
 
 const baseUrl = "https://roomserver2.onrender.com";
 //const baseUrl = "http://localhost:3000"
@@ -76,5 +76,5 @@ export const {
   useSayConversationMutation,
   useGetUserWithChatsQuery,
   useGetChatQuery,
-  useSetChatMutation
+  useSetChatMutation,
 } = apiSlice;

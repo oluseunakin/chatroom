@@ -25,11 +25,15 @@ import { Spinner } from "./Spinner";
 
 export function Welcome() {
   const dispatch = useDispatch();
+  const [modal, showModal] = useState(false);
   const username = useSelector<RootState, string>((state) => getUser(state));
   const rooms = useSelector<RootState, Room[]>((state) =>
     transformEntityState(getMyRooms(state))
   );
   const { data: user, isLoading: userLoading } = useGetUserQuery(username);
+  const showChat = useSelector<RootState, boolean>((state) =>
+    getShowChat(state)
+  );
   const [showNotification, setShowNotification] = useState({
     room: false,
     chat: false,
@@ -103,16 +107,19 @@ export function Welcome() {
   if (userLoading || roomLoading) return <Spinner />;
 
   return (
-    <div className={enteredRoom.length > 0 ? 'active': ''}>
+    <div className={modal ? "active" : ""}>
+      {showChat && <ChatComponent />}
       {showNotification.room && (
         <RoomNotification
           convoNotifications={roomNotification.conversations!}
+          showModal={showModal}
           joinNotifications={roomNotification.noti}
           showNoti={setShowNotification}
         />
       )}
       {showNotification.chat && (
         <ChatNotification
+          showModal={showModal}
           showNoti={setShowNotification}
           notifications={chatNotification.messages!}
         />
@@ -151,6 +158,7 @@ export function Welcome() {
             <button
               className="super"
               onClick={() => {
+                showModal(true);
                 setShowNotification({ ...showNotification, chat: true });
                 setChatNotification({ ...chatNotification, count: 0 });
               }}
@@ -163,6 +171,7 @@ export function Welcome() {
             <button
               className="super"
               onClick={() => {
+                showModal(true);
                 setShowNotification({ ...showNotification, room: true });
                 setRoomNotification({ ...roomNotification, count: 0 });
               }}
@@ -186,8 +195,8 @@ export function Welcome() {
           </div>
         }
       </header>
-      {enteredRoom.length > 0 && <RoomComponent />}
-      <div className="r">  
+      {enteredRoom.length > 0 && <RoomComponent showModal={showModal} />}
+      <div className="r">
         <div className="myrooms">
           {rooms &&
             rooms.map((room: Room, i: number) => (

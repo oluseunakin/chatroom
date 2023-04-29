@@ -21,7 +21,7 @@ export default function CreateUser() {
         placeholder="Wole Si Gbagede"
         onKeyUp={(e) => {
           if (e.key === "Enter") {
-            const name = nameRef.current!.value; 
+            const name = nameRef.current!.value;
             dispatch(setUser(name));
             createUser({ name }).unwrap();
           }

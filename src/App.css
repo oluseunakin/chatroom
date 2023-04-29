@@ -53,13 +53,13 @@ body {
   right: 5vw;
 }
 .chat {
-  background-color: rgb(95,158,160);
+  background-color: rgb(95, 158, 160);
   box-shadow: 1px 1px 4px lightyellow;
   z-index: 1000;
   position: absolute;
   top: 1vh;
   right: 0;
-  bottom: 230px;
+  bottom: 0px;
   left: 0;
   border: 1px solid transparent;
   max-width: 1280px;
@@ -81,6 +81,7 @@ body {
   justify-content: center;
   font-size: large;
   margin: 8px;
+  gap: 5px;
 }
 .chat > div:last-child textarea {
   font-size: larger;
@@ -105,17 +106,7 @@ body {
 .chat > div:nth-of-type(2) {
   background-color: white;
   overflow: auto;
-}
-.notifications {
-  z-index: 1001;
-  border: 1px solid;
-  position: absolute;
-  left: 20px;
-  right: 5px;
-  top: 4px;
-  height: 80%;
-  background-color: antiquewhite;
-  box-shadow: 1px 1px 5px beige;
+  height: 70%;
 }
 .noti {
   padding: 5%;
@@ -125,7 +116,7 @@ body {
   justify-content: space-between;
   border-radius: 10px;
   border: 1px solid cadetblue;
-  color: brown;
+  color: aquamarine;
   padding: 10px;
   margin-bottom: 10px;
 }
@@ -155,8 +146,8 @@ body {
   display: flex;
   justify-content: center;
 }
-.enteredroom {
-  background-color: rgba(0,0,0,0.5);
+.modal {
+  background-color: rgba(0, 0, 0, 0.5);
   box-shadow: 1px 1px 4px lightyellow;
   z-index: 100;
   position: absolute;
@@ -167,14 +158,14 @@ body {
   backdrop-filter: blur(5px);
   pointer-events: auto;
 }
-.active{
+.active {
   pointer-events: none;
 }
 .header {
   display: flex;
   justify-content: center;
   align-items: baseline;
-  gap: 20px
+  gap: 20px;
 }
 .header h2 {
   letter-spacing: 5px;
@@ -214,7 +205,7 @@ body {
   color: chocolate;
 }
 .convo > div:last-child span:hover {
-  cursor: pointer;;
+  cursor: pointer;
 }
 .conversations {
   background-color: honeydew;
@@ -297,21 +288,14 @@ body {
     gap: 10px;
     justify-content: space-around;
   }
-  .notifications {
-    left: 60%;
-  }
   .create > input {
     font-size: x-large;
     letter-spacing: 2px;
   }
-  .chat > div:nth-of-type(2) {
-    height: 70%;
-  }
-  .chat{
+  .chat {
     left: 65vw;
     width: 31vw;
     top: 21vh;
-    bottom: 322px;
   }
   header > h1:first-of-type {
     margin: 5px 0;
@@ -341,9 +325,7 @@ header > h1 {
   border: 10px solid #f3f3f3; /* Light grey */
   border-top: 10px solid #383636; /* Black */
   border-radius: 50%;
-  position: absolute;
-  top: 50%;
-  left: 50%;
+  z-index: 100000;
   animation: spinner 1.5s linear infinite;
 }
 @media (prefers-reduced-motion: no-preference) {

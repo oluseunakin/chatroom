@@ -2,6 +2,7 @@ import type { Conversation } from "../../type";
 
 export const RoomNotification = (props: {
   convoNotifications: Conversation[];
+  showModal: Function;
   joinNotifications: string[];
   showNoti: React.Dispatch<
     React.SetStateAction<{
@@ -10,12 +11,17 @@ export const RoomNotification = (props: {
     }>
   >;
 }) => {
-  const { convoNotifications, showNoti, joinNotifications } = props;
+  const { convoNotifications, showNoti, joinNotifications, showModal } = props;
 
   return (
-    <div className="notifications">
+    <div className="modal">
       <div className="close">
-        <button onClick={() => showNoti((noti) => ({ ...noti, room: false }))}>
+        <button
+          onClick={() => {
+            showNoti((noti) => ({ ...noti, room: false }));
+            showModal(false);
+          }}
+        >
           <span className="material-symbols-outlined">close</span>
         </button>
       </div>

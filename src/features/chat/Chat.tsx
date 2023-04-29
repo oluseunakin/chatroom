@@ -5,7 +5,8 @@ import type { RootState } from "../../store";
 import type { Message } from "../../type";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { socket } from "../socket";
-import { getReceiver, setChat } from "./chatStore";
+import { getReceiver, setChat, setShowChat } from "./chatStore";
+import { flushSync } from "react-dom";
 
 export const ChatComponent = () => {
   const dispatch = useDispatch();
@@ -31,28 +32,20 @@ export const ChatComponent = () => {
   }
 
   socket.on("receiveChat", (chat: Message) => {
-    setChats([...chats, chat]);
+    flushSync(() => {
+      setChats([...chats, chat]);
+    });
+    const div = divRef.current;
+    div!.lastElementChild?.scrollIntoView();
   });
-  useEffect(() => {
-    const div = divRef.current
-    if(div) {
-      const height = div.clientHeight
-      console.log(height)
-      window.scrollTo(0, height)
-    }
-  }, [chats])
+
   return (
     <div className="chat">
       <div>
         <div>
           <button
             onClick={() => {
-              dispatch(
-                setChat((chat: { showChat: boolean; receiver: string }) => ({
-                  ...chat,
-                  showChat: true,
-                }))
-              );
+              dispatch(setShowChat(false));
             }}
           >
             <span className="material-symbols-outlined">close</span>
@@ -99,7 +92,11 @@ export const ChatComponent = () => {
             };
             chatRef.current!.value = "";
             socket.emit("chat", receiver, c);
-            setChats([...chats, c]);
+            flushSync(() => {
+              setChats([...chats, c]);
+            });
+            const div = divRef.current;
+            div!.lastElementChild?.scrollIntoView();
           }}
           className="material-symbols-outlined"
         >
