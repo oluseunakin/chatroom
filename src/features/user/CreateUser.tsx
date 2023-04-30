@@ -22,8 +22,8 @@ export default function CreateUser() {
         onKeyUp={(e) => {
           if (e.key === "Enter") {
             const name = nameRef.current!.value;
-            dispatch(setUser(name));
             createUser({ name }).unwrap();
+            dispatch(setUser(name));
           }
         }}
       />
