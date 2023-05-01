@@ -25,6 +25,21 @@ export const ChatComponent = () => {
     if (chatFromServer) return chatFromServer.messages;
     return [];
   }, [chatFromServer]);
+  
+  function sendMsg () {
+      const c: Message = {
+        text: chatRef.current!.value,
+        createdAt: new Date().toDateString(),
+        sender,
+      };
+      chatRef.current!.value = "";
+      socket.emit("chat", receiver, c);
+      flushSync(() => {
+        setChats([...chats, c]);
+      });
+      const div = divRef.current;
+      div!.lastElementChild?.scrollIntoView();
+  }
   if (chatLoading) return <div>Loading</div>;
 
   function setClassname(senderr: string) {
@@ -82,22 +97,11 @@ export const ChatComponent = () => {
           })}
       </div>
       <div>
-        <textarea placeholder="Chat" rows={1} ref={chatRef}></textarea>
+        <textarea placeholder="Chat" rows={1} ref={chatRef} onKeyUp={e => {
+          if(e.key === 'Enter') sendMsg()
+        }}></textarea>
         <span
-          onClick={async () => {
-            const c: Message = {
-              text: chatRef.current!.value,
-              createdAt: new Date().toDateString(),
-              sender,
-            };
-            chatRef.current!.value = "";
-            socket.emit("chat", receiver, c);
-            flushSync(() => {
-              setChats([...chats, c]);
-            });
-            const div = divRef.current;
-            div!.lastElementChild?.scrollIntoView();
-          }}
+          onClick={() => sendMsg()}
           className="material-symbols-outlined"
         >
           send
