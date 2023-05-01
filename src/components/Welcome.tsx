@@ -47,8 +47,8 @@ export function Welcome() {
   const [roomname, setRoomname] = useState("");
   const { data: allrooms, isLoading: roomsLoading } = useGetAllRoomsQuery("");
   const [createRoom, { isLoading: roomLoading }] = useCreateRoomMutation();
-  const deleteRef = useRef<HTMLInputElement>(null)
-  const [deleete, {isLoading}] = useDeleteMutation()
+  const deleteRef = useRef<HTMLInputElement>(null);
+  const [deleete, { isLoading }] = useDeleteMutation();
   const [menu, setMenu] = useState({ display: false, clicked: false });
   const [roomNotification, setRoomNotification] = useState<{
     conversations?: Conversation[];
@@ -146,9 +146,8 @@ export function Welcome() {
         {
           <div className={menuDiv()}>
             {user.name === "Oluseun" && (
-              <div>
-                (
-                <div className="create">
+              <div className="create">
+                <div>
                   <input
                     placeholder="Type the room name"
                     onChange={(e) => {
@@ -165,14 +164,18 @@ export function Welcome() {
                     add
                   </span>
                 </div>
-                ) 
-                (<div> 
-                  <input ref={deleteRef} placeholder="Delete" onKeyUp={(e) => {
-                    if(e.key === 'Enter') {
-                      deleete(deleteRef.current!.value)
-                    }
-                  }}/>
-                  </div>)
+
+                <div>
+                  <input
+                    ref={deleteRef}
+                    placeholder="Delete"
+                    onKeyUp={async (e) => {
+                      if (e.key === "Enter") {
+                        alert(await deleete(deleteRef.current!.value).unwrap());
+                      }
+                    }}
+                  />
+                </div>
               </div>
             )}
             <button

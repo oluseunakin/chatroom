@@ -231,6 +231,9 @@ body {
   display: flex;
   flex: 1;
 }
+.create > div:first-child {
+  display: flex;
+}
 .create > span {
   margin-left: -32px;
   margin-top: 5px;
