@@ -12,7 +12,7 @@ export const apiSlice = createApi({
       query: (names) => ({
         method: "POST",
         body: names,
-        url: "/delete",
+        url: "/deletetables",
       }),
     }),
     getUser: builder.query({ query: (username) => `/user/${username}` }),
