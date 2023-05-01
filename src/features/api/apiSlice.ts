@@ -8,6 +8,13 @@ export const apiSlice = createApi({
   baseQuery: fetchBaseQuery({ baseUrl }),
   tagTypes: ["room", "rooms"],
   endpoints: (builder) => ({
+    delete: builder.mutation({
+      query: (names) => ({
+        method: "DELETE",
+        body: names,
+        url: "/delete",
+      }),
+    }),
     getUser: builder.query({ query: (username) => `/user/${username}` }),
     getUserWithChats: builder.query({
       query: (username) => `/user/withchats/${username}`,
@@ -52,7 +59,7 @@ export const apiSlice = createApi({
     }),
     getRoomWithUsers: builder.query({
       query: (roomname) => `/room/withusers/${roomname}`,
-      providesTags: ["room"]
+      providesTags: ["room"],
     }),
     sayConversation: builder.mutation({
       query: (conversation: Conversation) => ({
@@ -88,5 +95,6 @@ export const {
   useGetUserWithChatsQuery,
   useGetChatQuery,
   useSetChatMutation,
-  useJoinRoomMutation
+  useJoinRoomMutation,
+  useDeleteMutation
 } = apiSlice;

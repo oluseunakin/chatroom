@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   apiSlice,
   useCreateRoomMutation,
+  useDeleteMutation,
   useGetAllRoomsQuery,
   useGetUserQuery,
 } from "../features/api/apiSlice";
@@ -30,7 +31,11 @@ export function Welcome() {
   const rooms = useSelector<RootState, Room[]>((state) =>
     transformEntityState(getMyRooms(state))
   );
-  const { data: user, isLoading: userLoading, isFetching } = useGetUserQuery(username);
+  const {
+    data: user,
+    isLoading: userLoading,
+    isFetching,
+  } = useGetUserQuery(username);
   const showChat = useSelector<RootState, boolean>((state) =>
     getShowChat(state)
   );
@@ -42,6 +47,8 @@ export function Welcome() {
   const [roomname, setRoomname] = useState("");
   const { data: allrooms, isLoading: roomsLoading } = useGetAllRoomsQuery("");
   const [createRoom, { isLoading: roomLoading }] = useCreateRoomMutation();
+  const deleteRef = useRef<HTMLInputElement>(null)
+  const [deleete, {isLoading}] = useDeleteMutation()
   const [menu, setMenu] = useState({ display: false, clicked: false });
   const [roomNotification, setRoomNotification] = useState<{
     conversations?: Conversation[];
@@ -59,8 +66,8 @@ export function Welcome() {
     messages: [],
     count: 0,
   });
-  if(!userLoading && isFetching) {
-console.log('hi')
+  if (!userLoading && isFetching) {
+    console.log("hi");
   }
   useEffect(() => {
     if (user && user.myrooms) {
@@ -139,22 +146,33 @@ console.log('hi')
         {
           <div className={menuDiv()}>
             {user.name === "Oluseun" && (
-              <div className="create">
-                <input
-                  placeholder="Type the room name"
-                  onChange={(e) => {
-                    setRoomname(e.target.value);
-                  }}
-                />
-                <span
-                  className="material-symbols-outlined"
-                  onClick={async () => {
-                    const newroom: Room = { name: roomname };
-                    await createRoom(newroom).unwrap();
-                  }}
-                >
-                  add
-                </span>
+              <div>
+                (
+                <div className="create">
+                  <input
+                    placeholder="Type the room name"
+                    onChange={(e) => {
+                      setRoomname(e.target.value);
+                    }}
+                  />
+                  <span
+                    className="material-symbols-outlined"
+                    onClick={async () => {
+                      const newroom: Room = { name: roomname };
+                      await createRoom(newroom).unwrap();
+                    }}
+                  >
+                    add
+                  </span>
+                </div>
+                ) 
+                (<div> 
+                  <input ref={deleteRef} placeholder="Delete" onKeyUp={(e) => {
+                    if(e.key === 'Enter') {
+                      deleete(deleteRef.current!.value)
+                    }
+                  }}/>
+                  </div>)
               </div>
             )}
             <button
@@ -197,7 +215,9 @@ console.log('hi')
           </div>
         }
       </header>
-      <div className="joinmessage">Join or Enter a Room to join the conversation </div>
+      <div className="joinmessage">
+        Join or Enter a Room to join the conversation{" "}
+      </div>
       {enteredRoom.length > 0 && <RoomComponent showModal={showModal} />}
       <div className="r">
         <div className="myrooms">
