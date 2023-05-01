@@ -1,12 +1,12 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import type { Chat, Conversation, Room, User } from "../../type";
 
-const baseUrl = "https://roomserver2.onrender.com";
-//const baseUrl = "http://localhost:3000"
+//const baseUrl = "https://roomserver2.onrender.com";
+const baseUrl = "http://localhost:3000";
 
 export const apiSlice = createApi({
   baseQuery: fetchBaseQuery({ baseUrl }),
-  tagTypes: ["room"],
+  tagTypes: ["room", "rooms"],
   endpoints: (builder) => ({
     getUser: builder.query({ query: (username) => `/user/${username}` }),
     getUserWithChats: builder.query({
@@ -33,15 +33,26 @@ export const apiSlice = createApi({
         body: room,
         url: "room/createroom",
       }),
+      invalidatesTags: ["rooms"],
+    }),
+    joinRoom: builder.mutation({
+      query: (data: { name: string; joiner: string }) => ({
+        method: "POST",
+        body: data,
+        url: "room/joinroom",
+      }),
       invalidatesTags: ["room"],
     }),
     getAllRooms: builder.query({
       query: () => "/room/all",
-      providesTags: ["room"],
+      providesTags: ["rooms"],
     }),
-    getRoom: builder.query({ query: (roomname) => `/room/${roomname}` }),
+    getRoom: builder.query({
+      query: (roomname) => `/room/${roomname}`,
+    }),
     getRoomWithUsers: builder.query({
       query: (roomname) => `/room/withusers/${roomname}`,
+      providesTags: ["room"]
     }),
     sayConversation: builder.mutation({
       query: (conversation: Conversation) => ({
@@ -77,4 +88,5 @@ export const {
   useGetUserWithChatsQuery,
   useGetChatQuery,
   useSetChatMutation,
+  useJoinRoomMutation
 } = apiSlice;

@@ -48,7 +48,7 @@ body {
 }
 .r {
   position: absolute;
-  top: 20vh;
+  top: 40vh;
   left: 5vw;
   right: 5vw;
 }
@@ -300,9 +300,6 @@ body {
   header > h1:first-of-type {
     margin: 5px 0;
   }
-  .r {
-    top: 30vh;
-  }
 }
 header > h1 {
   color: aquamarine;
@@ -318,6 +315,14 @@ header > h1 {
   to {
     transform: rotate(360deg);
   }
+}
+.joinmessage {
+  color: white;
+  display: flex;
+  justify-content: center;
+  margin: 20px;
+  font-size: xx-large;
+  text-align: center;
 }
 .spinner {
   width: 50px;

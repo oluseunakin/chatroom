@@ -30,7 +30,7 @@ export function Welcome() {
   const rooms = useSelector<RootState, Room[]>((state) =>
     transformEntityState(getMyRooms(state))
   );
-  const { data: user, isLoading: userLoading } = useGetUserQuery(username);
+  const { data: user, isLoading: userLoading, isFetching } = useGetUserQuery(username);
   const showChat = useSelector<RootState, boolean>((state) =>
     getShowChat(state)
   );
@@ -59,7 +59,9 @@ export function Welcome() {
     messages: [],
     count: 0,
   });
-
+  if(!userLoading && isFetching) {
+console.log('hi')
+  }
   useEffect(() => {
     if (user && user.myrooms) {
       socket.emit("rooms", user.myrooms, username);
@@ -195,6 +197,7 @@ export function Welcome() {
           </div>
         }
       </header>
+      <div className="joinmessage">Join or Enter a Room to join the conversation </div>
       {enteredRoom.length > 0 && <RoomComponent showModal={showModal} />}
       <div className="r">
         <div className="myrooms">

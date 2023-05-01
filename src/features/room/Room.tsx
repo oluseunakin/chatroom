@@ -2,7 +2,7 @@ import type { EntityState } from "@reduxjs/toolkit";
 import { useDispatch, useSelector } from "react-redux";
 import type { RootState } from "../../store";
 import type { Conversation, Message, Room, User } from "../../type";
-import { useGetRoomWithUsersQuery } from "../api/apiSlice";
+import { useGetRoomWithUsersQuery, useJoinRoomMutation } from "../api/apiSlice";
 import { setRoomname } from "../roomname";
 import { getMyRooms, joinRoom } from "./roomStore";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -19,6 +19,7 @@ export function RoomExcerpt(props: { room: Room }) {
     getMyRooms(state)
   );
   const { room } = props;
+  const [joinroom, { isLoading }] = useJoinRoomMutation();
   const inRoom = myrooms.ids.includes(room.name);
   const dispatch = useDispatch();
   return (
@@ -34,8 +35,9 @@ export function RoomExcerpt(props: { room: Room }) {
         </button>
       ) : (
         <button
-          onClick={() => {
+          onClick={async () => {
             dispatch(joinRoom({ name: room.name }));
+            await joinroom({ name: room.name, joiner: user }).unwrap();
             socket.emit("joinroom", room.name, user);
           }}
         >
@@ -46,12 +48,15 @@ export function RoomExcerpt(props: { room: Room }) {
   );
 }
 
-export function RoomComponent(props: {showModal: Function}) {
+export function RoomComponent(props: { showModal: Function }) {
   const enteredRoom = useSelector<RootState, string>((state) => state.roomname);
   const talkerName = useSelector<RootState, string>((state) => getUser(state));
+  const [reload, setReload] = useState(false);
   const dispatch = useDispatch();
-  const { data: room, isLoading: roomLoading } =
-    useGetRoomWithUsersQuery(enteredRoom);
+  const { data: room, isLoading: roomLoading, refetch } = useGetRoomWithUsersQuery(
+    enteredRoom,
+    { refetchOnMountOrArgChange: true }
+  );
   const [newConversations, setNewConversations] = useState<Conversation[]>([]);
   const [showUsers, setShowUsers] = useState(false);
   const users = useMemo(() => {
@@ -66,8 +71,8 @@ export function RoomComponent(props: {showModal: Function}) {
     getShowChat(state)
   );
   useEffect(() => {
-    props.showModal()
-  }, [props.showModal])
+    props.showModal();
+  }, [props.showModal]);
   useEffect(() => {
     if (room) {
       setStatus(Array(users.length).fill(false));
@@ -99,7 +104,10 @@ export function RoomComponent(props: {showModal: Function}) {
             return nstatus;
           });
         })
-        .on("joinedroom", (joiner: string) => {});
+        .on("joinedroom", () => {
+          setReload(true);
+          refetch()
+        });
     }
   });
   socket.on("message", (data) => {
@@ -110,7 +118,10 @@ export function RoomComponent(props: {showModal: Function}) {
   return (
     <div className={chatState ? "active modal" : "modal"}>
       <div className="close">
-        <button onClick={() => dispatch(setRoomname(""))}>
+        <button onClick={() => {
+          dispatch(setRoomname(""))
+          setReload(false)
+          }}>
           <span className="material-symbols-outlined">close</span>
         </button>
       </div>
@@ -154,7 +165,7 @@ export function RoomComponent(props: {showModal: Function}) {
           </div>
         )}
         <div>
-          <input ref={sayRef} placeholder="hello"/>
+          <input ref={sayRef} placeholder="hello" />
           <span
             onClick={async () => {
               const said = sayRef.current?.value!;
