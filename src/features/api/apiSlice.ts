@@ -10,7 +10,7 @@ export const apiSlice = createApi({
   endpoints: (builder) => ({
     delete: builder.mutation({
       query: (names) => ({
-        method: "DELETE",
+        method: "POST",
         body: names,
         url: "/delete",
       }),

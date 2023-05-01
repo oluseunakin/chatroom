@@ -230,18 +230,20 @@ body {
 .create {
   display: flex;
   flex: 1;
+  flex-direction: column;
+  gap: 10px;
 }
 .create > div:first-child {
   display: flex;
 }
-.create > span {
+.create span {
   margin-left: -32px;
   margin-top: 5px;
 }
-.create > span:hover {
+.create span:hover {
   cursor: pointer;
 }
-.create > input {
+.create input {
   width: 100%;
   border: 0;
   border-radius: 10px 20px 20px 10px;
