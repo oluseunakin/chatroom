@@ -48,7 +48,7 @@ body {
 }
 .r {
   position: absolute;
-  top: 40vh;
+  top: 34vh;
   left: 5vw;
   right: 5vw;
 }
@@ -283,6 +283,9 @@ body {
   text-align: center;
 }
 @media screen and (min-width: 50em) {
+  .r{
+    top: 40vh;
+  }
   .notmenudiv {
     display: flex;
     gap: 10px;
