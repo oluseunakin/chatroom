@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   apiSlice,
@@ -49,7 +49,7 @@ export function Welcome() {
   const [createRoom, { isLoading: roomLoading }] = useCreateRoomMutation();
   const deleteRef = useRef<HTMLInputElement>(null);
   const [deleete, { isLoading }] = useDeleteMutation();
-  const [menu, setMenu] = useState({ display: false, clicked: false });
+  const [menu, setMenu] = useState({ display: true, clicked: false });
   const [roomNotification, setRoomNotification] = useState<{
     conversations?: Conversation[];
     count: number;
@@ -81,8 +81,8 @@ export function Welcome() {
   }, [username]);
 
   window.onresize = () => {
-    if (window.innerWidth <= 799) setMenu({ ...menu, display: true });
-    else setMenu({ ...menu, display: false });
+    if (window.innerWidth >= 799) setMenu({ ...menu, display: false });
+    else setMenu({...menu, display: true})
   };
 
   socket
@@ -164,7 +164,6 @@ export function Welcome() {
                     add
                   </span>
                 </div>
-
                 <div>
                   <input
                     ref={deleteRef}
