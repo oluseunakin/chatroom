@@ -1,11 +1,11 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import type { Chat, Conversation, Room, User } from "../../type";
 
-const baseUrl = "https://roomserver2.onrender.com";
-//const baseUrl = "http://localhost:3000";
+//const baseUrl = "https://roomserver2.onrender.com";
+const baseUrl = "http://localhost:3000";
 
 export const apiSlice = createApi({
-  baseQuery: fetchBaseQuery({ baseUrl }),
+  baseQuery: fetchBaseQuery({ baseUrl , credentials: 'include'}),
   tagTypes: ["room", "rooms"],
   endpoints: (builder) => ({
     delete: builder.mutation({
@@ -15,15 +15,19 @@ export const apiSlice = createApi({
         url: "/deletetables",
       }),
     }),
-    getUser: builder.query({ query: (username) => `/user/${username}` }),
+    getUser: builder.query({
+      query: () => ({
+        url: "/user/getuser",
+      }),
+    }),
     getUserWithChats: builder.query({
       query: (username) => `/user/withchats/${username}`,
     }),
     updateUser: builder.mutation({
-      query: (data: { username: string; rooms: Room[] }) => ({
+      query: (data: { rooms: Room[] }) => ({
         method: "POST",
         body: data.rooms,
-        url: `/user/update/${data.username}`,
+        url: `/user/updateuser`,
       }),
     }),
     createUser: builder.mutation({
@@ -43,15 +47,22 @@ export const apiSlice = createApi({
       invalidatesTags: ["rooms"],
     }),
     joinRoom: builder.mutation({
-      query: (data: { name: string; joiner: string }) => ({
+      query: (data) => ({
         method: "POST",
         body: data,
         url: "room/joinroom",
       }),
       invalidatesTags: ["room"],
     }),
-    getAllRooms: builder.query({
-      query: () => "/room/all",
+    getAllRooms: builder.query<
+      {
+        toprooms: Room[] | undefined;
+        others: Room[] | undefined;
+        status: string | undefined;
+      },
+      number
+    >({
+      query: (pageno) => `/room/all/${pageno}`,
       providesTags: ["rooms"],
     }),
     getRoom: builder.query({
@@ -69,8 +80,9 @@ export const apiSlice = createApi({
       }),
     }),
     getChat: builder.query({
-      query: (arg: { sender: string; receiver: string }) =>
-        `/chat/${arg.sender}/${arg.receiver}`,
+      query: (receiver) => ({
+        url: `/chat/${receiver}`,
+      }),
     }),
     setChat: builder.mutation({
       query: (chat: Chat) => ({
@@ -96,5 +108,5 @@ export const {
   useGetChatQuery,
   useSetChatMutation,
   useJoinRoomMutation,
-  useDeleteMutation
+  useDeleteMutation,
 } = apiSlice;

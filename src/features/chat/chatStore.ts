@@ -1,11 +1,12 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { RootState } from "../../store";
+import type{ User } from "..//..//type";
 
 const initialState: {
-  receiver: string;
+  receiver: User;
   showChat: boolean;
 } = {
-  receiver: "",
+  receiver: {name: "", id: -1},
   showChat: false,
 };
 

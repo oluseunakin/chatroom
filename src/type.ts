@@ -1,20 +1,25 @@
 export type User = {
     name: string;
+    id?: number;
+    password?: String;
 }
 
 export type Conversation = {
-    id?: number;
-    talkerName: string;
+    talkerName?: string;
     message: Message;
     roomName: string
 }
 
 export type Chat = {
     id?: number;
-    senderName: string;
-    messages: Message[];
-    receiverName: string;
-   
+    message: Message;
+    receiverId: number;
+}
+
+export type CN = {
+    messages?: Message[];
+    count: number;
+    receiver?: User;
 }
 
 export type Message = {

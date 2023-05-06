@@ -1,13 +1,11 @@
-import { useEffect, useState } from "react";
-import { MessageComponent } from "../../components/Message";
-import type { Message } from "../../type";
+import type { CN } from "../../type";
 import { useDispatch, useSelector } from "react-redux";
 import { getShowChat, setChat } from "../chat/chatStore";
 import { RootState } from "../../store";
 import { ChatComponent } from "../chat/Chat";
 
 export const ChatNotification = (props: {
-  notifications: Message[];
+  notifications: CN;
   showModal: Function;
   showNoti: React.Dispatch<
     React.SetStateAction<{
@@ -36,13 +34,13 @@ export const ChatNotification = (props: {
         </button>
       </div>
       <div className="noti">
-        {notifications.map((notification, i) => (
+        {notifications.messages!.map((notification, i) => (
           <button
             className="chatnoti"
             key={i}
             onClick={() => {
               dispatch(
-                setChat({ receiver: notification.sender, showChat: true })
+                setChat({ receiver: notifications.receiver, showChat: true })
               );
               showNoti((noti) => ({ ...noti, chat: false }));
             }}

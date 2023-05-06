@@ -8,11 +8,11 @@ const initialState = roomAdapter.getInitialState()
 
 const roomSlice = createSlice({name: 'rooms', reducers: {
     joinRoom: roomAdapter.setOne,
-    setMyRoom: roomAdapter.setMany,
+    setMyRooms: roomAdapter.setMany,
     reset: () => initialState
 }, initialState})
 
-export const {joinRoom, setMyRoom, reset} = roomSlice.actions
+export const {joinRoom, setMyRooms, reset} = roomSlice.actions
 
 export const getARoom = (state: RootState, roomname: string) => state.rooms.entities[roomname]
 

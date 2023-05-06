@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "../../store";
 import { useCreateUserMutation } from "../api/apiSlice";
@@ -6,7 +6,8 @@ import { setUser } from "./userStore";
 import { Spinner } from "../../components/Spinner";
 
 export default function CreateUser() {
-  const nameRef = useRef<HTMLInputElement>(null);
+  const [name, setName] = useState("");
+  const [password, setPassword] = useState("")
   const dispatch = useDispatch<AppDispatch>();
   const [createUser, { isLoading }] = useCreateUserMutation();
 
@@ -14,19 +15,17 @@ export default function CreateUser() {
     <Spinner />
   ) : (
     <div className="creatediv">
-      <label htmlFor="user">Enter your name then press Enter</label>
+      <label htmlFor="user">Wole si Gbagede</label>
       <input
-        ref={nameRef}
+        onChange={e => {setName(e.target.value)}}
         id="user"
-        placeholder="Wole Si Gbagede"
-        onKeyUp={async (e) => {
-          if (e.key === "Enter") {
-            const name = nameRef.current!.value;
-            await createUser({ name }).unwrap();
-            dispatch(setUser(name));
-          }
-        }}
+        placeholder="Your Name"
       />
+      <input type="password"  onChange={e => {setPassword(e.target.value)}} placeholder="Password"/>
+      <button onClick={async () => {
+        const user = await createUser({ name, password }).unwrap();
+        dispatch(setUser(user.name));
+      }} ><span>Wole</span></button>
     </div>
   );
 }

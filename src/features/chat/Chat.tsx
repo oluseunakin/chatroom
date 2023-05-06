@@ -1,39 +1,39 @@
 import { useDispatch, useSelector } from "react-redux";
-import { useGetChatQuery } from "../api/apiSlice";
+import { useGetChatQuery, useSetChatMutation } from "../api/apiSlice";
 import { getUser } from "../user/userStore";
 import type { RootState } from "../../store";
-import type { Message } from "../../type";
-import { useEffect, useMemo, useRef, useState } from "react";
+import type { Message, User } from "../../type";
+import { useMemo, useRef, useState } from "react";
 import { socket } from "../socket";
 import { getReceiver, setChat, setShowChat } from "./chatStore";
 import { flushSync } from "react-dom";
 
 export const ChatComponent = () => {
   const dispatch = useDispatch();
-  const receiver = useSelector<RootState, string>((state) =>
+  const receiver = useSelector<RootState, User>((state) =>
     getReceiver(state)
   );
   const [chats, setChats] = useState<Message[]>([]);
   const sender = useSelector<RootState, string>((state) => getUser(state));
   const chatRef = useRef<HTMLTextAreaElement>(null);
   const divRef = useRef<HTMLDivElement>(null);
-  const { data: chatFromServer, isLoading: chatLoading } = useGetChatQuery({
-    sender,
-    receiver,
-  });
+  const { data: chatFromServer, isLoading: chatLoading } = useGetChatQuery(receiver.id);
+  const [sendChat, {isSuccess}] = useSetChatMutation()
   const messages = useMemo<Message[]>(() => {
     if (chatFromServer) return chatFromServer.messages;
     return [];
   }, [chatFromServer]);
   
-  function sendMsg () {
+  async function sendMsg () {
       const c: Message = {
         text: chatRef.current!.value,
         createdAt: new Date().toDateString(),
         sender,
       };
       chatRef.current!.value = "";
-      socket.emit("chat", receiver, c);
+      sendChat({receiverId: receiver.id, message: c}).unwrap().then(() => {
+        socket.emit("chat", receiver, c);
+      })
       flushSync(() => {
         setChats([...chats, c]);
       });
@@ -66,7 +66,7 @@ export const ChatComponent = () => {
             <span className="material-symbols-outlined">close</span>
           </button>
         </div>
-        <h3>{receiver}</h3>
+        <h3>{receiver.name}</h3>
       </div>
       <div ref={divRef}>
         {messages.map((message, i, arr) => {

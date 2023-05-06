@@ -2,7 +2,11 @@ import type { EntityState } from "@reduxjs/toolkit";
 import { useDispatch, useSelector } from "react-redux";
 import type { RootState } from "../../store";
 import type { Conversation, Message, Room, User } from "../../type";
-import { useGetRoomWithUsersQuery, useJoinRoomMutation } from "../api/apiSlice";
+import {
+  useGetRoomWithUsersQuery,
+  useJoinRoomMutation,
+  useSayConversationMutation,
+} from "../api/apiSlice";
 import { setRoomname } from "../roomname";
 import { getMyRooms, joinRoom } from "./roomStore";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -13,7 +17,7 @@ import { setChat } from "../chat/chatStore";
 import { Spinner } from "../../components/Spinner";
 import { getShowChat } from "../chat/chatStore";
 
-export function RoomExcerpt(props: { room: Room }) {
+export function RoomExcerpt(props: { room: Room; showModal: Function }) {
   const user = useSelector<RootState, string>((state) => getUser(state));
   const myrooms = useSelector<RootState, EntityState<Room>>((state) =>
     getMyRooms(state)
@@ -29,6 +33,7 @@ export function RoomExcerpt(props: { room: Room }) {
         <button
           onClick={() => {
             dispatch(setRoomname(room.name));
+            props.showModal(true);
           }}
         >
           <span className="material-symbols-outlined">door_open</span>
@@ -37,7 +42,7 @@ export function RoomExcerpt(props: { room: Room }) {
         <button
           onClick={async () => {
             dispatch(joinRoom({ name: room.name }));
-            await joinroom({ name: room.name, joiner: user }).unwrap();
+            await joinroom(room.name).unwrap();
             socket.emit("joinroom", room.name, user);
           }}
         >
@@ -51,28 +56,22 @@ export function RoomExcerpt(props: { room: Room }) {
 export function RoomComponent(props: { showModal: Function }) {
   const enteredRoom = useSelector<RootState, string>((state) => state.roomname);
   const talkerName = useSelector<RootState, string>((state) => getUser(state));
-  const [reload, setReload] = useState(false);
   const dispatch = useDispatch();
-  const { data: room, isLoading: roomLoading, refetch } = useGetRoomWithUsersQuery(
-    enteredRoom,
-    { refetchOnMountOrArgChange: true }
-  );
+  const {
+    currentData: room,
+    isLoading: roomLoading,
+    refetch,
+  } = useGetRoomWithUsersQuery(enteredRoom);
   const [newConversations, setNewConversations] = useState<Conversation[]>([]);
   const [showUsers, setShowUsers] = useState(false);
-  const users = useMemo(() => {
-    if (room) {
-      return room.users.filter((user: User) => user.name !== talkerName);
-    }
-    return [];
-  }, [room]);
+  const users = useMemo(() => room ? room.users.filter((user: User) => user.name !== talkerName) : [], [room]);
   const sayRef = useRef<HTMLInputElement>(null);
   const [status, setStatus] = useState<boolean[]>([]);
   const chatState = useSelector<RootState, boolean>((state) =>
     getShowChat(state)
   );
-  useEffect(() => {
-    props.showModal();
-  }, [props.showModal]);
+  const [converse, { isLoading }] = useSayConversationMutation();
+
   useEffect(() => {
     if (room) {
       setStatus(Array(users.length).fill(false));
@@ -104,24 +103,23 @@ export function RoomComponent(props: { showModal: Function }) {
             return nstatus;
           });
         })
-        .on("joinedroom", () => {
-          setReload(true);
-          refetch()
+        .on("joinedroom", () => {refetch();})
+        .on("message", (data) => {
+          setNewConversations([...newConversations, data]);
         });
     }
-  });
-  socket.on("message", (data) => {
-    setNewConversations([...newConversations, data]);
   });
 
   if (roomLoading) return <Spinner />;
   return (
     <div className={chatState ? "active modal" : "modal"}>
       <div className="close">
-        <button onClick={() => {
-          dispatch(setRoomname(""))
-          setReload(false)
-          }}>
+        <button
+          onClick={() => {
+            dispatch(setRoomname(""));
+            props.showModal(false);
+          }}
+        >
           <span className="material-symbols-outlined">close</span>
         </button>
       </div>
@@ -136,11 +134,11 @@ export function RoomComponent(props: { showModal: Function }) {
           <div className="users">
             {users.map((user: User, i: number) => (
               <button
-                key={i}
+                key={user.id}
                 value={user.name}
                 onClick={(e) => {
                   dispatch(
-                    setChat({ receiver: e.currentTarget.value, showChat: true })
+                    setChat({ receiver: user, showChat: true })
                   );
                 }}
               >
@@ -180,6 +178,7 @@ export function RoomComponent(props: { showModal: Function }) {
                 message,
               };
               socket.emit("receivedRoomMessage", conversation);
+              const newConversation = await converse(conversation).unwrap();
               sayRef.current!.value = "";
             }}
             className="material-symbols-outlined"
