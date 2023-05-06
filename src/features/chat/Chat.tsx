@@ -5,7 +5,7 @@ import type { RootState } from "../../store";
 import type { Message, User } from "../../type";
 import { useMemo, useRef, useState } from "react";
 import { socket } from "../socket";
-import { getReceiver, setChat, setShowChat } from "./chatStore";
+import { getReceiver, setShowChat } from "./chatStore";
 import { flushSync } from "react-dom";
 
 export const ChatComponent = () => {
@@ -31,7 +31,7 @@ export const ChatComponent = () => {
         sender,
       };
       chatRef.current!.value = "";
-      sendChat({receiverId: receiver.id, message: c}).unwrap().then(() => {
+      sendChat({receiverId: receiver.id!, message: c}).unwrap().then(() => {
         socket.emit("chat", receiver, c);
       })
       flushSync(() => {
