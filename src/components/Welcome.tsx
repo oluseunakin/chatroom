@@ -6,6 +6,7 @@ import {
   useDeleteMutation,
   useGetAllRoomsQuery,
   useGetUserQuery,
+  useLogoutMutation,
 } from "../features/api/apiSlice";
 import { RoomComponent, RoomExcerpt } from "../features/room/Room";
 import {
@@ -47,6 +48,7 @@ export function Welcome() {
   const [roomname, setRoomname] = useState("");
   const [pageno, setPageNo] = useState(0);
   const [reload, setReload] = useState(false);
+  const [logout] = useLogoutMutation()
   const {
     data: allrooms,
     currentData,
@@ -270,6 +272,7 @@ export function Welcome() {
                 dispatch(roomReset());
                 dispatch(userReset());
                 dispatch(chatReset());
+                logout('')
                 dispatch(apiSlice.util.resetApiState());
                 socket.emit("offline", username);
               }}

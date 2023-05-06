@@ -91,6 +91,12 @@ export const apiSlice = createApi({
         body: chat,
       }),
     }),
+    logout: builder.mutation({
+      query: () => ({
+        url: '/logout',
+        method: 'POST',
+      })
+    })
   }),
 });
 
@@ -109,4 +115,5 @@ export const {
   useSetChatMutation,
   useJoinRoomMutation,
   useDeleteMutation,
+  useLogoutMutation
 } = apiSlice;
