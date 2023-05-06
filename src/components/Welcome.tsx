@@ -90,7 +90,7 @@ export function Welcome() {
     if (!roomsLoading && !allrooms?.status) {
       setLatest(allrooms);
     }
-    else setLatest({toprooms: Array<Room>(), others: Array<Room>(), status: allrooms?.status})
+    else setLatest({toprooms: Array<Room>(), others: Array<Room>(), status: undefined})
   }, [roomsLoading]);
 
   useEffect(() => {
@@ -293,7 +293,7 @@ export function Welcome() {
               <RoomExcerpt room={room} key={i} showModal={showModal}/>
             ))}
         </div>
-        {latest?.status ? (
+        {(latest?.status) ? (
           <Spinner />
         ) : (
           <div className="allrooms">
