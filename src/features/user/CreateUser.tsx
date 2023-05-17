@@ -24,7 +24,7 @@ export default function CreateUser() {
       <input type="password"  onChange={e => {setPassword(e.target.value)}} placeholder="Password"/>
       <button onClick={async () => {
         const user = await createUser({ name, password }).unwrap();
-        dispatch(setUser(user.name));
+        dispatch(setUser(user));
       }} ><span>Wole</span></button>
     </div>
   );

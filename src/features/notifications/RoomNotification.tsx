@@ -37,7 +37,7 @@ export const RoomNotification = (props: {
         {convoNotifications.map((notification, i) => (
           <div key={i} className="joinnoti">
             <div>
-              {notification.talkerName} posted in {notification.roomName}
+              {notification.talker?.name} posted in {notification.room.name}
             </div>
             <div>{new Date().toDateString()}</div>
           </div>

@@ -11,7 +11,7 @@
 .jdiv {
   display: flex;
   flex-direction: column;
-  gap: 30px;
+  gap: 7vh;
 }
 .logo:hover {
   filter: drop-shadow(0 0 2em #646cffaa);
@@ -22,7 +22,6 @@
 body {
   background-color: darkslategrey;
   color: black;
-  padding: 5px;
   margin: 0;
 }
 header > h1 {
@@ -56,6 +55,7 @@ header > h1 {
   display: flex;
   flex-direction: column;
   gap: 45px;
+  margin-bottom: 10px;
 }
 .allrooms > div > h3 {
   display: flex;
@@ -96,14 +96,14 @@ hr {
   margin-bottom: 5px;
   color: burlywood;
 }
-.chat > div:last-child {
+.chat > div:last-child, .commentDiv > div:last-child {
   display: flex;
   justify-content: center;
   font-size: large;
   margin: 8px;
   gap: 5px;
 }
-.chat > div:last-child textarea {
+.chat > div:last-child textarea, .commentDiv > div:last-child textarea {
   font-size: larger;
   width: 100%;
   color: black;
@@ -111,10 +111,10 @@ hr {
   resize: none;
   background-color: white;
 }
-.chat > div:last-child span {
+.chat > div:last-child span,.commentDiv > div:last-child span {
   color: chocolate;
 }
-.chat > div:last-child span:hover {
+.chat > div:last-child span:hover, .commentDiv > div:last-child span:hover {
   cursor: pointer;
 }
 .chat h3 {
@@ -129,14 +129,14 @@ hr {
   height: 70%;
 }
 .noti {
-  padding: 5%;
+  padding: 1%;
 }
 .joinnoti {
   display: flex;
   justify-content: space-between;
   border-radius: 10px;
   border: 1px solid cadetblue;
-  color: aquamarine;
+  color: white;
   padding: 10px;
   margin-bottom: 10px;
 }
@@ -166,7 +166,7 @@ hr {
   display: flex;
   justify-content: center;
 }
-.modal {
+.modal, .commentDiv {
   background-color: rgba(0, 0, 0, 0.5);
   box-shadow: 1px 1px 4px lightyellow;
   z-index: 100;
@@ -174,9 +174,14 @@ hr {
   top: 1vh;
   left: 1vw;
   right: 1vw;
+  bottom: 1vh;
+  overflow: auto;
   max-width: 1280px;
   backdrop-filter: blur(5px);
   pointer-events: auto;
+}
+.commentDiv {
+  z-index: 10000;
 }
 .active {
   pointer-events: none;
@@ -219,10 +224,10 @@ hr {
   align-items: center;
   margin: 15px;
 }
-.convo > div:last-child input {
+.convo > div:last-child textarea {
   width: 100%;
   padding: 10px;
-  line-height: 2;
+  font-size: large;
 }
 .convo > div:last-child span {
   color: chocolate;
@@ -233,16 +238,45 @@ hr {
 }
 .conversations {
   background-color: honeydew;
-  padding: 1em;
+  padding: 5px;
+  padding-top: 10px;
 }
 .conversations > div {
   border-radius: 50px 0 0 50px;
   border: 1px solid cadetblue;
-  padding-left: 38px;
+  padding-left: 20px;
   margin-bottom: 20px;
+  height: 220px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px
 }
 .conversations h4 {
-  margin: 5px;
+  margin-top: 0;
+}
+.conversations h5 {
+  display: flex;
+  justify-content: end;
+  margin: 0;
+}
+.conversations > div > div:nth-of-type(2) {
+  display: flex;
+  gap: 4vw;
+}
+.conversations > div button {
+  display: flex;
+  gap: 5px;
+  background-color: floralwhite;
+}
+.agree {
+  color: red;
+}
+.disagree {
+  color: darkkhaki;
+}
+.comment {
+  color: green;
 }
 .conversations > div > div > div:last-of-type {
   padding: 5px 0;
@@ -317,7 +351,7 @@ hr {
     margin: 20px !important;
   }
   div.joinmessage {
-    margin: 10vh 3vh 3vh;
+    margin: 10vh 3vh;
   }
   .notmenudiv {
     display: flex;
@@ -334,8 +368,11 @@ hr {
     width: 31vw;
     top: 21vh;
   }
-  header > h1:first-of-type {
-    margin: 5px 0;
+  .commentDiv {
+    left: 65vw;
+    width: 33vw;
+    top: 21vh;
+    border: 1px solid;
   }
 }
 @keyframes spinner {
@@ -350,7 +387,7 @@ hr {
   color: white;
   display: flex;
   justify-content: center;
-  margin: 4vh 2vh 2vh;
+  margin: 4vh 2vh 10vh;
   font-size: xx-large;
   text-align: center;
 }

@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   apiSlice,
@@ -17,26 +17,22 @@ import {
 import { getUser, reset as userReset } from "../features/user/userStore";
 import { RootState } from "../store";
 import type { CN, Conversation, Message, Room, User } from "../type";
-import { transformEntityState } from "../helper";
 import { socket } from "../features/socket";
 import { getShowChat, reset as chatReset } from "../features/chat/chatStore";
 import { ChatComponent } from "../features/chat/Chat";
 import { RoomNotification } from "../features/notifications/RoomNotification";
 import { ChatNotification } from "../features/notifications/ChatNotification";
 import { Spinner } from "./Spinner";
+import { getCommentState } from "../features/comment/commentStore";
+import { Comments } from "../features/comment/Comments";
+import { getRoom } from "../features/roomname";
 
 export function Welcome() {
   const dispatch = useDispatch();
   const [modal, showModal] = useState(false);
-  const username = useSelector<RootState, string>((state) => getUser(state));
-  const rooms = useSelector<RootState, Room[]>((state) =>
-    transformEntityState(getMyRooms(state))
-  );
-  const {
-    data: user,
-    isLoading: userLoading,
-    isFetching,
-  } = useGetUserQuery(username);
+  const userr = useSelector<RootState, User>((state) => getUser(state));
+  const { data: user, isLoading: userLoading } = useGetUserQuery("");
+  const myRooms = useSelector<RootState, Room[]>((state) => getMyRooms(state))
   const showChat = useSelector<RootState, boolean>((state) =>
     getShowChat(state)
   );
@@ -44,11 +40,11 @@ export function Welcome() {
     room: false,
     chat: false,
   });
-  const enteredRoom = useSelector<RootState, string>((state) => state.roomname);
+  const enteredRoom = useSelector<RootState, { id: number; entered: number[]; }>((state) => getRoom(state));
   const [roomname, setRoomname] = useState("");
   const [pageno, setPageNo] = useState(0);
   const [reload, setReload] = useState(false);
-  const [logout] = useLogoutMutation()
+  const [logout] = useLogoutMutation();
   const {
     data: allrooms,
     currentData,
@@ -58,6 +54,9 @@ export function Welcome() {
   } = useGetAllRoomsQuery(pageno);
   const [latest, setLatest] = useState(allrooms);
   const [createRoom, { isLoading: roomLoading }] = useCreateRoomMutation();
+  const commentState = useSelector((state: RootState) =>
+    getCommentState(state)
+  );
   const deleteRef = useRef<HTMLInputElement>(null);
   const [deleete, { isLoading }] = useDeleteMutation();
   const [menu, setMenu] = useState({ display: true, clicked: false });
@@ -77,20 +76,24 @@ export function Welcome() {
 
   useEffect(() => {
     if (user && user.myrooms) {
-      socket.emit("rooms", user.myrooms, username);
       dispatch(setMyRooms(user.myrooms));
+      socket.emit("rooms", user.myrooms, user.name);
     }
   }, [user]);
-  
+
   useEffect(() => {
     !latest?.status && window.addEventListener("scroll", bodyScroll);
-  },[latest])
+  }, [latest]);
 
   useEffect(() => {
     if (!roomsLoading && !allrooms?.status) {
       setLatest(allrooms);
-    }
-    else setLatest({toprooms: Array<Room>(), others: Array<Room>(), status: undefined})
+    } else
+      setLatest({
+        toprooms: Array<Room>(),
+        others: Array<Room>(),
+        status: undefined,
+      });
   }, [roomsLoading]);
 
   useEffect(() => {
@@ -110,10 +113,7 @@ export function Welcome() {
       }
     }
   }, [roomsFetching, pageno]);
-
-  useEffect(() => {
-    socket.connect();
-  }, [username]);
+  socket.connect();
 
   window.onresize = () => {
     if (window.innerWidth >= 799) setMenu({ ...menu, display: false });
@@ -137,9 +137,9 @@ export function Welcome() {
   }, [reload]);
 
   useEffect(() => {
-    if(pageno > 0) {
+    if (pageno > 0) {
       //console.log(pageno)
-      refetch()
+      refetch();
     }
   }, [pageno]);
 
@@ -149,18 +149,18 @@ export function Welcome() {
 
   socket
     .on("message", (conversation: Conversation) => {
-      if (conversation.talkerName !== username)
+      if (conversation.talker?.name !== userr.name) {
         setRoomNotification({
           ...roomNotification,
           conversations: roomNotification.conversations?.concat([conversation]),
           count: roomNotification.count + 1,
         });
+      }
     })
-    .on("receiveChat", (receiver: User, chat: Message) => {
+    .on("receiveChat", (chat: Message) => {
       setChatNotification({
         messages: chatNotification.messages?.concat([chat]),
         count: chatNotification.count + 1,
-        receiver
       });
     })
     .on("joinedroom", (joiner: string, roomname: string) => {
@@ -179,7 +179,8 @@ export function Welcome() {
 
   return (
     <div className={modal ? "active" : ""}>
-      {showChat && <ChatComponent />}
+      {showChat && <ChatComponent showModal={showModal} />}
+      {commentState.showComment && <Comments />}
       {showNotification.room && (
         <RoomNotification
           convoNotifications={roomNotification.conversations!}
@@ -192,7 +193,7 @@ export function Welcome() {
         <ChatNotification
           showModal={showModal}
           showNoti={setShowNotification}
-          notifications={chatNotification}
+          notifications={chatNotification.messages!}
         />
       )}
       <header>
@@ -209,7 +210,7 @@ export function Welcome() {
         <h1>{user.name}</h1>
         {
           <div className={menuDiv()}>
-            {user.name === "Oluseun" && (
+            {user.id === 1860 && (
               <div className="create">
                 <div>
                   <input
@@ -221,7 +222,7 @@ export function Welcome() {
                   <span
                     className="material-symbols-outlined"
                     onClick={async () => {
-                      const newroom: Room = { name: roomname };
+                      const newroom = { name: roomname };
                       await createRoom(newroom).unwrap();
                     }}
                   >
@@ -272,9 +273,9 @@ export function Welcome() {
                 dispatch(roomReset());
                 dispatch(userReset());
                 dispatch(chatReset());
-                logout('')
+                logout("");
                 dispatch(apiSlice.util.resetApiState());
-                socket.emit("offline", username);
+                socket.emit("offline", userr.name);
               }}
             >
               <span className="material-symbols-outlined">logout</span>
@@ -285,15 +286,18 @@ export function Welcome() {
       <div className="joinmessage">
         Join or Enter a Room to Join the Conversation{" "}
       </div>
-      {enteredRoom.length > 0 && <RoomComponent showModal={showModal} />}
+      {modal && enteredRoom.id !== -1 && (
+        <RoomComponent showModal={showModal} />
+      )}
       <div className="jdiv">
-        <div className="myrooms">
-          {rooms &&
-            rooms.map((room: Room, i: number) => (
-              <RoomExcerpt room={room} key={i} showModal={showModal}/>
+        {myRooms && (
+          <div className="myrooms">
+            {myRooms.map((room: Room, i: number) => (
+              <RoomExcerpt room={room} key={i} showModal={showModal} />
             ))}
-        </div>
-        {(latest?.status) ? (
+          </div>
+        )}
+        {latest?.status || roomsLoading ? (
           <Spinner />
         ) : (
           <div className="allrooms">
@@ -302,7 +306,7 @@ export function Welcome() {
               <hr />
               <div>
                 {latest!.toprooms!.map((room: Room, i: number) => (
-                  <RoomExcerpt room={room} key={i} showModal={showModal}/>
+                  <RoomExcerpt room={room} key={i} showModal={showModal} />
                 ))}
               </div>
             </div>
@@ -311,7 +315,7 @@ export function Welcome() {
               <hr />
               <div>
                 {latest!.others!.map((room: Room, i: number) => (
-                  <RoomExcerpt room={room} key={i} showModal={showModal}/>
+                  <RoomExcerpt room={room} key={i} showModal={showModal} />
                 ))}
               </div>
             </div>

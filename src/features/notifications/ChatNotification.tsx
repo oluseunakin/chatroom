@@ -1,11 +1,11 @@
-import type { CN } from "../../type";
+import type { CN, Message } from "../../type";
 import { useDispatch, useSelector } from "react-redux";
 import { getShowChat, setChat } from "../chat/chatStore";
 import { RootState } from "../../store";
 import { ChatComponent } from "../chat/Chat";
 
 export const ChatNotification = (props: {
-  notifications: CN;
+  notifications: Message[];
   showModal: Function;
   showNoti: React.Dispatch<
     React.SetStateAction<{
@@ -22,7 +22,7 @@ export const ChatNotification = (props: {
 
   return (
     <div className="modal">
-      {showChat && <ChatComponent />}
+      {showChat && <ChatComponent showModal={showModal} />}
       <div className="close">
         <button
           onClick={() => {
@@ -34,18 +34,18 @@ export const ChatNotification = (props: {
         </button>
       </div>
       <div className="noti">
-        {notifications.messages!.map((notification, i) => (
+        {notifications.map((notification, i) => (
           <button
             className="chatnoti"
             key={i}
             onClick={() => {
               dispatch(
-                setChat({ receiver: notifications.receiver, showChat: true })
+                setChat({ receiver: {name: notification.senderName, id: notification.senderId}, showChat: true })
               );
               showNoti((noti) => ({ ...noti, chat: false }));
             }}
           >
-            <p>You have a new message from </p> <h5>{notification.sender}</h5>
+            <p>You have a new message from </p> <h5>{notification.senderName}</h5>
           </button>
         ))}
       </div>

@@ -5,9 +5,13 @@ export type User = {
 }
 
 export type Conversation = {
-    talkerName?: string;
+    id?: number;
+    talker?: User;
     message: Message;
-    roomName: string
+    room: Room;
+    agree?: number[];
+    disagree?: number[];
+    commentsCount?: number;
 }
 
 export type Chat = {
@@ -19,7 +23,6 @@ export type Chat = {
 export type CN = {
     messages?: Message[];
     count: number;
-    receiver?: User;
 }
 
 export type Message = {
@@ -27,7 +30,8 @@ export type Message = {
     text: string;
     media?: string[];
     createdAt: string; 
-    sender: string;
+    senderId: number;
+    senderName: string;
 }
 
 export enum Progress {
@@ -38,6 +42,7 @@ export enum Progress {
 }
 
 export type Room = { 
+    id: number;
     name: string;
     users?: User [];
     conversations?: Conversation[];

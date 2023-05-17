@@ -5,7 +5,7 @@ const baseUrl = "https://roomserver2.onrender.com";
 //const baseUrl = "http://localhost:3000";
 
 export const apiSlice = createApi({
-  baseQuery: fetchBaseQuery({ baseUrl , credentials: 'include'}),
+  baseQuery: fetchBaseQuery({ baseUrl, credentials: "include" }),
   tagTypes: ["room", "rooms"],
   endpoints: (builder) => ({
     delete: builder.mutation({
@@ -39,7 +39,7 @@ export const apiSlice = createApi({
     }),
     getAllUsers: builder.query({ query: () => "/user/all" }),
     createRoom: builder.mutation({
-      query: (room: Room) => ({
+      query: (room) => ({
         method: "PUT",
         body: room,
         url: "room/createroom",
@@ -93,9 +93,33 @@ export const apiSlice = createApi({
     }),
     logout: builder.mutation({
       query: () => ({
-        url: '/logout',
-        method: 'POST',
-      })
+        url: "/logout",
+        method: "POST",
+      }),
+    }),
+    agree: builder.mutation({
+      query: (data: {conversationId: number, data: number[]}) => ({
+        url: `/conversation/${data.conversationId}/agree`,
+        method: "POST",
+        body: data.data
+      }),
+    }),
+    disagree: builder.mutation({
+      query: (data: {conversationId: number, data: number[]}) => ({
+        url: `/conversation/${data.conversationId}/disagree`,
+        method: "POST",
+        body: data.data
+      }),
+    }),
+    comment: builder.mutation({
+      query: (data: { comment: Conversation; conversationId: number }) => ({
+        url: `/conversation/${data.conversationId}/comment`,
+        method: "POST",
+        body: data.comment,
+      }),
+    }),
+    getComments: builder.query({
+      query: (conversationId) => `/conversation/${conversationId}/getcomments`
     })
   }),
 });
@@ -115,5 +139,9 @@ export const {
   useSetChatMutation,
   useJoinRoomMutation,
   useDeleteMutation,
-  useLogoutMutation
+  useLogoutMutation,
+  useAgreeMutation,
+  useCommentMutation,
+  useDisagreeMutation,
+  useLazyGetCommentsQuery
 } = apiSlice;
