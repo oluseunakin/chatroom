@@ -28,7 +28,8 @@ header > h1 {
   color: aquamarine;
   display: flex;
   justify-content: center;
-  font-weight: bold;
+  font-weight: 4em;
+  text-align: center;
   margin: 10px;
 }
 .online {
@@ -171,10 +172,7 @@ hr {
   box-shadow: 1px 1px 4px lightyellow;
   z-index: 100;
   position: fixed;
-  top: 1vh;
-  left: 1vw;
-  right: 1vw;
-  bottom: 1vh;
+  top: 0;
   overflow: auto;
   max-width: 1280px;
   backdrop-filter: blur(5px);
@@ -188,14 +186,16 @@ hr {
 }
 .header {
   display: flex;
-  justify-content: center;
-  align-items: baseline;
+  flex-direction: column;
+  align-items: center;
   gap: 20px;
+  margin-bottom: 10px;
 }
 .header h2 {
-  letter-spacing: 5px;
+  letter-spacing: 1px;
   color: cyan;
-  font-size: xx-large;
+  font-size: 2em;
+  text-align: center;
 }
 .close {
   display: flex;
@@ -238,8 +238,8 @@ hr {
 }
 .conversations {
   background-color: honeydew;
-  padding: 5px;
-  padding-top: 10px;
+  padding: 10px 5px 5px;
+  margin:0 5px;
 }
 .conversations > div {
   border-radius: 50px 0 0 50px;
@@ -311,6 +311,9 @@ hr {
   display: flex;
   justify-content: end;
 }
+.menu > button {
+  border-top-right-radius: 0;
+}
 .menudiv {
   background-color: cadetblue;
   padding: 2em;
@@ -335,9 +338,11 @@ hr {
   height: inherit;
   align-items: center;
   flex-direction: column;
+  margin: 0 5px;
 }
 .creatediv  label {
-  font-size: 5vw;
+  font-size: 3em;
+  text-align: center;
 }
 .creatediv input {
   border-radius: 10px;
@@ -345,6 +350,46 @@ hr {
   width: 70%;
   margin: 10px;
   text-align: center;
+}
+.joinmessage {
+  color: white;
+  display: flex;
+  justify-content: center;
+  margin: 4vh 2vh 10vh;
+  font-size: xx-large;
+  text-align: center;
+}
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 10px solid #f3f3f3; /* Light grey */
+  border-top: 10px solid #383636; /* Black */
+  border-radius: 50%;
+  z-index: 100000;
+  animation: spinner 1.5s linear infinite;
+  position: fixed;
+  top: 40vh;
+  left: 50vw;
+  backdrop-filter: blur(10px);
+  background-color: rgba(0, 0, 0, 0.5);
+}
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+.card {
+  padding: 2em;
+  background-color: #f9f9f9;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.card button {
+  background-color: brown;
+  color: cornsilk;
 }
 @media screen and (min-width: 50em) {
   header > h1 {
@@ -382,46 +427,4 @@ hr {
   to {
     transform: rotate(360deg);
   }
-}
-.joinmessage {
-  color: white;
-  display: flex;
-  justify-content: center;
-  margin: 4vh 2vh 10vh;
-  font-size: xx-large;
-  text-align: center;
-}
-.spinner {
-  width: 50px;
-  height: 50px;
-  border: 10px solid #f3f3f3; /* Light grey */
-  border-top: 10px solid #383636; /* Black */
-  border-radius: 50%;
-  z-index: 100000;
-  animation: spinner 1.5s linear infinite;
-  position: fixed;
-  top: 40vh;
-  left: 50vw;
-  backdrop-filter: blur(10px);
-  background-color: rgba(0, 0, 0, 0.5);
-}
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
-}
-
-.card {
-  padding: 2em;
-  background-color: #f9f9f9;
-  border: 1px solid #ccc;
-  border-radius: 10px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.card button {
-  background-color: brown;
-  color: cornsilk;
 }

@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "../../store";
 import { useCreateUserMutation } from "../api/apiSlice";
@@ -25,7 +25,7 @@ export default function CreateUser() {
       <button onClick={async () => {
         const user = await createUser({ name, password }).unwrap();
         dispatch(setUser(user));
-      }} ><span>Wole</span></button>
+      }} >Wole</button>
     </div>
   );
 }
