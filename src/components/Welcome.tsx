@@ -75,6 +75,10 @@ export function Welcome() {
   });
 
   useEffect(() => {
+    socket.connect();
+  }, [])
+
+  useEffect(() => {
     if (user) {
       user.myrooms && dispatch(setMyRooms(user.myrooms));
       socket.emit("online", user.name);
@@ -113,7 +117,6 @@ export function Welcome() {
       }
     }
   }, [roomsFetching, pageno]);
-  socket.connect();
 
   window.onresize = () => {
     if (window.innerWidth >= 799) setMenu({ ...menu, display: false });
