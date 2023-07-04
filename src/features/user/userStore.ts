@@ -2,9 +2,10 @@ import { createSlice } from "@reduxjs/toolkit";
 import type { RootState } from "../../store";
 import type { User } from "../../type";
 
-const initialState: User = {
+const initialState = {
   name: "",
   id: -1,
+  status: false
 }
 
 const userSlice = createSlice({

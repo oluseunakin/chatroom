@@ -75,9 +75,9 @@ export function Welcome() {
   });
 
   useEffect(() => {
-    if (user && user.myrooms) {
-      dispatch(setMyRooms(user.myrooms));
-      socket.emit("rooms", user.myrooms, user.name);
+    if (user) {
+      user.myrooms && dispatch(setMyRooms(user.myrooms));
+      socket.emit("online", user.name);
     }
   }, [user]);
 
@@ -163,13 +163,6 @@ export function Welcome() {
         count: chatNotification.count + 1,
       });
     })
-    .on("joinedroom", (joiner: string, roomname: string) => {
-      setRoomNotification({
-        ...roomNotification,
-        noti: [...roomNotification.noti, `${joiner} joined ${roomname}`],
-        count: roomNotification.count + 1,
-      });
-    });
   function menuDiv() {
     let r = "notmenudiv";
     if (menu.clicked) r = "menudiv";

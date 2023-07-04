@@ -2,6 +2,7 @@ export type User = {
     name: string;
     id?: number;
     password?: String;
+    status: boolean;
 }
 
 export type Conversation = {

@@ -37,6 +37,7 @@ export function RoomExcerpt(props: { room: Room; showModal: Function }) {
           onClick={() => {
             dispatch(enterRoom(room.id));
             props.showModal(true);
+            socket.emit("joinroom", room.id, user.id)
           }}
         >
           <span className="material-symbols-outlined">door_open</span>
@@ -46,7 +47,7 @@ export function RoomExcerpt(props: { room: Room; showModal: Function }) {
           onClick={async () => {
             dispatch(setRoom(room));
             const joinedRoom = await joinroom(room.name).unwrap();
-            socket.emit("joinroom", joinedRoom, user.name);
+            socket.emit("joinroom", room.id, user.id);
           }}
         >
           <span className="material-symbols-outlined">group_add</span>
@@ -62,7 +63,7 @@ export function RoomComponent(props: {showModal: Function}) {
     RootState,
     { id: number; entered: Array<number> }
   >((state) => getRoom(state));
-  const talker = useSelector<RootState, User>((state) => getUser(state));
+  const me = useSelector<RootState, User>((state) => getUser(state));
   const divRef = useRef<HTMLDivElement>(null);
   const dispatch = useDispatch();
   let {
@@ -73,17 +74,22 @@ export function RoomComponent(props: {showModal: Function}) {
   const [showUsers, setShowUsers] = useState(false);
   const users = useMemo(
     () =>
-      room ? room.users.filter((user: User) => user.name !== talker.name) : [],
+      room ? room.users.filter((user: User) => user.name !== me.name) : [],
     [room]
   );
+  const [members, setMembers] = useState<number[]>([])
   const sayRef = useRef<HTMLTextAreaElement>(null);
-  const [status, setStatus] = useState<boolean[]>([]);
   const chatState = useSelector<RootState, boolean>((state) =>
     getShowChat(state)
   );
   const [converse, { isLoading: converseLoading }] =
     useSayConversationMutation();
 
+
+  function isInRoom(userId: number) {
+    return members.includes(userId)
+  }
+    
   useEffect(() => {
     return () => {
       dispatch(reset());
@@ -100,10 +106,6 @@ export function RoomComponent(props: {showModal: Function}) {
     if (room) {
       dispatch(setConversations(room.conversations));
       dispatch(setConversationRoom({ id: room.id, name: room.name }));
-      setStatus(Array(users.length).fill(false));
-      socket.emit("isonline", users).on("status", (status) => {
-        setStatus(status);
-      });
     }
   }, [room]);
 
@@ -111,34 +113,17 @@ export function RoomComponent(props: {showModal: Function}) {
     if (room) {
       socket
         .on("goneoff", (offed) => {
-          const offedIndex = users.findIndex(
-            (user: User, i: number) => user.name === offed
-          );
-          setStatus((status) => {
-            const nstatus = [...status];
-            nstatus[offedIndex] = false;
-            return nstatus;
-          });
+          setMembers(members.filter((member) => member != offed)) 
         })
-        .on("comeon", (oned) => {
-          const onedIndex = users.findIndex(
-            (user: User, i: number) => user.name === oned
-          );
-          setStatus((status) => {
-            const nstatus = [...status];
-            nstatus[onedIndex] = true;
-            return nstatus;
-          });
-        })
-        .on("joinedroom", () => {
-          refetch();
+        .on("joinedroom", (oned: number) => {
+          setMembers([...members, oned])
         })
         .on("message", (data: Conversation) => {
           dispatch(setNewConversation(data));
         })
         .on("agree", (data) => {});
     }
-  });
+  }, []);
 
   if (roomLoading) return <Spinner />;
 
@@ -149,6 +134,7 @@ export function RoomComponent(props: {showModal: Function}) {
           onClick={() => {
             dispatch(leaveRoom());
             showModal(false);
+            socket.emit("leftroom", me.id)
           }}
         >
           <span className="material-symbols-outlined">close</span>
@@ -171,13 +157,13 @@ export function RoomComponent(props: {showModal: Function}) {
                   key={user.id}
                   value={user.name}
                   onClick={(e) => {
-                    if (status[i])
+                    if (isInRoom(user.id!))
                       dispatch(setChat({ receiver: user, showChat: true }));
-                    else alert("You can only chat when the person is online");
+                    else alert("You can only chat when the person is in the room");
                   }}
                 >
                   {user.name}{" "}
-                  <span className={status[i] ? "online" : "offline"}></span>
+                  <span className={isInRoom(user.id!) ? "online" : "offline"}></span>
                 </button>
               ))}
             </div>
@@ -192,13 +178,13 @@ export function RoomComponent(props: {showModal: Function}) {
                   const message: Message = {
                     text: said,
                     createdAt: new Date().toDateString(),
-                    senderId: talker.id!,
-                    senderName: talker.name,
+                    senderId: me.id!,
+                    senderName: me.name,
                   };
                   const conversation: Conversation = {
                     room: { id: room.id, name: room.name },
                     message,
-                    talker: { id: talker.id, name: talker.name },
+                    talker: {...me},
                   };
                   const newConversation = await converse(conversation).unwrap();
                   socket.emit("receivedRoomMessage", newConversation);
