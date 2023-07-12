@@ -1,43 +1,35 @@
 import type { Conversation } from "../../type";
 
 export const RoomNotification = (props: {
-  convoNotifications: Conversation[];
-  showModal: Function;
-  joinNotifications: string[];
-  showNoti: React.Dispatch<
-    React.SetStateAction<{
-      room: boolean;
-      chat: boolean;
-    }>
-  >;
+  roomNotification: {
+    count: number;
+    noti: string[];
+    show: boolean;
+  };
+  setRoomNotification: React.Dispatch<React.SetStateAction<{
+    count: number;
+    noti: string[];
+    show: boolean;
+}>>
 }) => {
-  const { convoNotifications, showNoti, joinNotifications, showModal } = props;
+  const { roomNotification, setRoomNotification } = props;
 
   return (
     <div className="modal">
       <div className="close">
         <button
           onClick={() => {
-            showNoti((noti) => ({ ...noti, room: false }));
-            showModal(false);
+            setRoomNotification({...roomNotification, show: false})
           }}
         >
           <span className="material-symbols-outlined">close</span>
         </button>
       </div>
       <div className="noti">
-        {joinNotifications.map((notification, i) => (
-          <div key={i} className="joinnoti">
-            <div>{notification}</div>
-            <div>{new Date().toDateString()}</div>
-          </div>
-        ))}
-      </div>
-      <div className="noti">
-        {convoNotifications.map((notification, i) => (
+        {roomNotification.noti.map((notification, i) => (
           <div key={i} className="joinnoti">
             <div>
-              {notification.talker?.name} posted in {notification.room.name}
+              {notification}
             </div>
             <div>{new Date().toDateString()}</div>
           </div>

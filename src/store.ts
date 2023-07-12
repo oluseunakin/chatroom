@@ -5,12 +5,10 @@ import roomReducer from './features/room/roomStore'
 import roomnameReducer from './features/roomname'
 import chatReducer from './features/chat/chatStore'
 import conversationReducer from './features/conversation/conversationStore'
-import commentReducer from './features/comment/commentStore'
 
 export const store =  configureStore({
   reducer: {
     user: userReducer,
-    comment: commentReducer,
     rooms: roomReducer,
     roomname: roomnameReducer,
     chat: chatReducer,

@@ -2,7 +2,6 @@ export type User = {
     name: string;
     id?: number;
     password?: String;
-    status?: boolean;
 }
 
 export type Conversation = {
@@ -24,6 +23,7 @@ export type Chat = {
 export type CN = {
     messages?: Message[];
     count: number;
+    show: boolean;
 }
 
 export type Message = {

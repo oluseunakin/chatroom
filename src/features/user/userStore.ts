@@ -1,6 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { RootState } from "../../store";
-import type { User } from "../../type";
 
 const initialState = {
   name: "",

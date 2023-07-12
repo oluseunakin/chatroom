@@ -6,13 +6,13 @@ import { useDispatch, useSelector } from "react-redux";
 import { getUser } from "../user/userStore";
 import { RootState } from "../../store";
 import { socket } from "../socket";
-import { setCommentState, setComments } from "../comment/commentStore";
 import {
   agree as setAg,
   disagree as setDg,
   update,
 } from "../conversation/conversationStore";
 import { Spinner } from "../../components/Spinner";
+import { Comments } from "../../components/Comments";
 
 export const ConversationComponent = (props: {
   convo: Conversation;
@@ -21,7 +21,7 @@ export const ConversationComponent = (props: {
 }) => {
   const [agree] = useAgreeMutation();
   const [disagree] = useDisagreeMutation();
-  const [getComments, {isLoading}] = useLazyGetCommentsQuery();
+  const [getComments, { isLoading }] = useLazyGetCommentsQuery();
   const { convo, room, isNew } = props;
   const [reload, setReload] = useState(false);
   const [agreeReload, setAgreeReload] = useState({ id: -1, data: [] });
@@ -30,6 +30,7 @@ export const ConversationComponent = (props: {
   const oldagree = convo.agree;
   const oldDisagree = convo.disagree;
   const talker = useSelector<RootState, User>((state) => getUser(state));
+  const [comments, setComments] = useState<Conversation[] | undefined>()
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -66,21 +67,32 @@ export const ConversationComponent = (props: {
       );
   }, [disagreeReload]);
 
-  socket
-    .on("comment", (data: Conversation) => {
-      //setNewData(data);
-    })
-    .on("agree", (id, userid, data) => {
-      userid !== talker.id && setAgreeReload({ id, data });
-    })
-    .on("disagree", (id, userid, data) => {
-      userid !== talker.id && setDisagreeReload({ id, data });
-    });
+  useEffect(() => {
+    socket
+      .on("comment", (data: Conversation) => {})
+      .on("agree", (id, userid, data) => {
+        userid !== talker.id && setAgreeReload({ id, data });
+      })
+      .on("disagree", (id, userid, data) => {
+        userid !== talker.id && setDisagreeReload({ id, data });
+      });
+    return () => {
+      socket.removeAllListeners();
+    };
+  });
+
+  useEffect(() => {
+    if (divRef.current && isNew) {
+      const div = divRef.current;
+      div.style.backgroundColor = "green";
+      setTimeout(() => {}, 10000);
+      div.style.backgroundColor = "unset";
+    }
+  }, [isNew]);
 
   return (
     <div ref={divRef}>
-      {isNew && <h5>New</h5>}
-      <h4>{convo.talker?.name}</h4>
+      <h3>{convo.talker?.name}</h3>
       <div>
         <div>{convo.message.text}</div>
         <div>{convo.message.createdAt}</div>
@@ -112,20 +124,14 @@ export const ConversationComponent = (props: {
         <button
           onClick={async () => {
             const comments = await getComments(convo.id!).unwrap();
-            dispatch(
-              setCommentState({
-                showComment: true,
-                room: { id: room.id, name: room.name },
-                convo: {id: convo.id, commentsCount: convo.commentsCount},
-              })
-            );
-            dispatch(setComments(comments.comments));
+            setComments(comments.comments)   
           }}
         >
           <span className="material-symbols-outlined comment">reply</span>
           <span>{convo.commentsCount}</span>
         </button>
       </div>
+      {comments && <Comments comments={comments} room={room} convo={convo} />}
       {isLoading && <Spinner />}
     </div>
   );

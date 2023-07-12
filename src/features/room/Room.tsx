@@ -1,6 +1,6 @@
 import { useDispatch, useSelector } from "react-redux";
 import type { RootState } from "../../store";
-import type { Conversation, Message, Room, User } from "../../type";
+import type { CN, Conversation, Message, Room, User } from "../../type";
 import {
   useGetRoomWithUsersQuery,
   useJoinRoomMutation,
@@ -18,26 +18,28 @@ import { enterRoom, getRoom, leaveRoom } from "../roomname";
 import {
   setConversationRoom,
   setConversations,
-  setNewConversation,
   reset,
 } from "../conversation/conversationStore";
+import { ChatComponent } from "../chat/Chat";
+import { ChatNotification } from "../notifications/ChatNotification";
 
-export function RoomExcerpt(props: { room: Room; showModal: Function }) {
-  const user = useSelector<RootState, User>((state) => getUser(state));
+export function RoomExcerpt(props: { room: Room; showModal?: Function; setJoined?: Function }) {
   const myrooms = useSelector<RootState, Room[]>((state) => getMyRooms(state));
-  const { room } = props;
+  const { room, showModal, setJoined } = props;
+  const me = useSelector<RootState, User>((state) => getUser(state));
   const [joinroom, { isLoading }] = useJoinRoomMutation();
   const inRoom = useMemo(() => myrooms.includes(room), [myrooms]);
   const dispatch = useDispatch();
   return (
     <div className="card">
+      {isLoading && <Spinner />}
       <h3>{room.name}</h3>
       {inRoom ? (
         <button
           onClick={() => {
             dispatch(enterRoom(room.id));
-            props.showModal(true);
-            socket.emit("joinroom", room.id, user.id)
+            showModal && showModal(true);
+            socket.emit("enterroom", room.id);
           }}
         >
           <span className="material-symbols-outlined">door_open</span>
@@ -45,9 +47,10 @@ export function RoomExcerpt(props: { room: Room; showModal: Function }) {
       ) : (
         <button
           onClick={async () => {
+            await joinroom(room.name).unwrap();
             dispatch(setRoom(room));
-            const joinedRoom = await joinroom(room.name).unwrap();
-            socket.emit("joinroom", room.id, user.id);
+            setJoined && setJoined(true)
+            socket.emit("joinroom", room.id, room.name, me.name);
           }}
         >
           <span className="material-symbols-outlined">group_add</span>
@@ -57,7 +60,7 @@ export function RoomExcerpt(props: { room: Room; showModal: Function }) {
   );
 }
 
-export function RoomComponent(props: {showModal: Function}) {
+export function RoomComponent(props: { showModal: Function }) {
   const { showModal } = props;
   const entered = useSelector<
     RootState,
@@ -77,19 +80,23 @@ export function RoomComponent(props: {showModal: Function}) {
       room ? room.users.filter((user: User) => user.name !== me.name) : [],
     [room]
   );
-  const [members, setMembers] = useState<number[]>([])
-  const sayRef = useRef<HTMLTextAreaElement>(null);
-  const chatState = useSelector<RootState, boolean>((state) =>
+  const [members, setMembers] = useState<number[]>([]);
+  const showChat = useSelector<RootState, boolean>((state) =>
     getShowChat(state)
   );
+  const sayRef = useRef<HTMLTextAreaElement>(null);
   const [converse, { isLoading: converseLoading }] =
     useSayConversationMutation();
-
+  const [chatNotification, setChatNotification] = useState<CN>({
+    messages: [],
+    count: 0,
+    show: false,
+  });
 
   function isInRoom(userId: number) {
-    return members.includes(userId)
+    return members.includes(userId);
   }
-    
+
   useEffect(() => {
     return () => {
       dispatch(reset());
@@ -98,43 +105,54 @@ export function RoomComponent(props: {showModal: Function}) {
 
   useEffect(() => {
     if (entered.entered.includes(entered.id) && room) {
-      refetch()
+      refetch();
     }
-  }, [room, entered])
+  }, [room, entered]);
 
   useEffect(() => {
     if (room) {
       dispatch(setConversations(room.conversations));
       dispatch(setConversationRoom({ id: room.id, name: room.name }));
+      socket.emit("inroom", room.id, me.id);
     }
   }, [room]);
 
-  useEffect(() => {
-    if (room) {
-      socket
-        .on("goneoff", (offed) => {
-          setMembers(members.filter((member) => member != offed)) 
-        })
-        .on("joinedroom", (oned: number) => {
-          setMembers([...members, oned])
-        })
-        .on("message", (data: Conversation) => {
-          dispatch(setNewConversation(data));
-        })
-        .on("agree", (data) => {});
+  const goneoff = (offed: number[]) => {
+    setMembers(offed);
+  };
+  const enteredRoom = (online: number[]) => {
+    setMembers(online);
+  };
+  const receiveChat = (message: Message) => {
+    if (!showChat) {
+      setChatNotification({
+        ...chatNotification,
+        count: chatNotification.count + 1,
+        messages: [...chatNotification.messages!, message],
+      });
     }
-  }, []);
+  };
+  useEffect(() => {
+    socket
+    .on("goneoff", goneoff)
+    .on("enteredroom", enteredRoom)
+    .on("receiveChat", receiveChat);
+    return () => {
+      socket.off("goneoff", goneoff).off("enteredroom", enteredRoom).off("receiveChat", receiveChat)
+    }
+  })
 
   if (roomLoading) return <Spinner />;
 
   return (
-    <div className={chatState ? "active modal" : "modal"} ref={divRef}>
+    <div className="modal" ref={divRef}>
+      {showChat && <ChatComponent />}
       <div className="close">
         <button
           onClick={() => {
             dispatch(leaveRoom());
             showModal(false);
-            socket.emit("leftroom", me.id)
+            socket.emit("leftroom", room.id, me.id);
           }}
         >
           <span className="material-symbols-outlined">close</span>
@@ -142,33 +160,55 @@ export function RoomComponent(props: {showModal: Function}) {
       </div>
       <div className="header">
         <h2>{room.name}</h2>
-        <button onClick={() => setShowUsers(!showUsers)}>
-          <span className="material-symbols-outlined">group</span>
-        </button>
+        <div>
+          <button onClick={() => setShowUsers(!showUsers)}>
+            <span className="material-symbols-outlined">group</span>
+          </button>
+          <button
+            className="super"
+            onClick={() => {
+              setChatNotification({
+                ...chatNotification,
+                show: !chatNotification.show,
+              });
+            }}
+          >
+            <span className="material-symbols-outlined">message</span>
+            {chatNotification.count > 0 && <div>{chatNotification.count}</div>}
+          </button>
+        </div>
+        {showUsers && (
+          <div className="users">
+            {users.map((user: User, i: number) => (
+              <button
+                key={user.id}
+                value={user.name}
+                onClick={(e) => {
+                  if (isInRoom(user.id!))
+                    dispatch(setChat({ receiver: user, showChat: true }));
+                  else
+                    alert("You can only chat when the person is in the room");
+                }}
+              >
+                {user.name}{" "}
+                <span
+                  className={isInRoom(user.id!) ? "online" : "offline"}
+                ></span>
+              </button>
+            ))}
+          </div>
+        )}
+        {chatNotification.show && (
+          <ChatNotification
+            notifications={chatNotification.messages!}
+            setChatNotification={setChatNotification}
+          />
+        )}
       </div>
       {converseLoading ? (
         <Spinner />
       ) : (
         <div className="convo">
-          {showUsers && (
-            <div className="users">
-              {users.map((user: User, i: number) => (
-                <button
-                  key={user.id}
-                  value={user.name}
-                  onClick={(e) => {
-                    if (isInRoom(user.id!))
-                      dispatch(setChat({ receiver: user, showChat: true }));
-                    else alert("You can only chat when the person is in the room");
-                  }}
-                >
-                  {user.name}{" "}
-                  <span className={isInRoom(user.id!) ? "online" : "offline"}></span>
-                </button>
-              ))}
-            </div>
-          )}
-          {room && <Conversations divRef={divRef} />}
           {
             <div>
               <textarea ref={sayRef} placeholder="Say Hello"></textarea>
@@ -184,18 +224,20 @@ export function RoomComponent(props: {showModal: Function}) {
                   const conversation: Conversation = {
                     room: { id: room.id, name: room.name },
                     message,
-                    talker: {...me},
+                    talker: { ...me },
                   };
-                  const newConversation = await converse(conversation).unwrap();
-                  socket.emit("receivedRoomMessage", newConversation);
                   sayRef.current!.value = "";
+                  const newConversation = await converse(conversation).unwrap();
+                  //dispatch(setNewConversation(newConversation));
+                  socket.emit("receivedRoomMessage", newConversation);
                 }}
                 className="material-symbols-outlined"
-              > 
+              >
                 send
               </span>
             </div>
           }
+          {room && <Conversations divRef={divRef} />}
         </div>
       )}
     </div>

@@ -3,7 +3,6 @@ import { RootState } from "../../store";
 import { Conversation } from "../../type";
 
 const conversationAdapter = createEntityAdapter<Conversation>();
-
 const initialState = conversationAdapter.getInitialState({
   newConversation: {
     id: -1,
@@ -24,7 +23,10 @@ const conversationSlice = createSlice({
       ...state,
       room: action.payload,
     }),
-    setNewConversation: (state, action) => ({...state, newConversation: action.payload}),
+    setNewConversation: (state, action) => {
+      state.newConversation = action.payload;
+      return state;
+    },
     reset: () => initialState,
     agree: (state, action) => {
       const { userid, id } = action.payload;
@@ -48,7 +50,7 @@ const conversationSlice = createSlice({
       }
       return state;
     },
-    update: conversationAdapter.updateOne
+    update: conversationAdapter.updateOne,
   },
   name: "conversations",
 });
@@ -60,7 +62,7 @@ export const {
   agree,
   disagree,
   setConversationRoom,
-  update
+  update,
 } = conversationSlice.actions;
 
 export const { selectAll: getConversations, selectById: getConversation } =

@@ -4,6 +4,7 @@ import { AppDispatch } from "../../store";
 import { useCreateUserMutation } from "../api/apiSlice";
 import { setUser } from "./userStore";
 import { Spinner } from "../../components/Spinner";
+import { socket } from "../socket";
 
 export default function CreateUser() {
   const [name, setName] = useState("");
@@ -23,8 +24,9 @@ export default function CreateUser() {
       />
       <input type="password"  onChange={e => {setPassword(e.target.value)}} placeholder="Password"/>
       <button onClick={async () => {
-        const user = await createUser({ name, password, status: true }).unwrap();
+        const user = await createUser({ name, password}).unwrap();
         dispatch(setUser(user));
+        socket.connect()
       }} >Wole</button>
     </div>
   );

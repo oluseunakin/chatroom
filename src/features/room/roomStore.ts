@@ -1,4 +1,4 @@
-import { createEntityAdapter, createSlice } from "@reduxjs/toolkit";
+import { EntityState, createEntityAdapter, createSlice } from "@reduxjs/toolkit";
 import type { Room } from "../../type";
 import { RootState } from "../../store";
 
