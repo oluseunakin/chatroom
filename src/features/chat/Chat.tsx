@@ -2,21 +2,21 @@ import { useDispatch, useSelector } from "react-redux";
 import { useGetChatQuery, useSetChatMutation } from "../api/apiSlice";
 import { getUser } from "../user/userStore";
 import type { RootState } from "../../store";
-import type { Message, User } from "../../type";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { MessageType, type Message, type User } from "../../type";
+import { useEffect, useRef, useState } from "react";
 import { socket } from "../socket";
-import { getReceiver, getShowChat, setShowChat } from "./chatStore";
-import { flushSync } from "react-dom";
 import { Spinner } from "../../components/Spinner";
+import { MessageComponent } from "../../components/Message";
+import { getRoom } from "../roomname";
+import { getReceiver } from "./chatStore";
+import { showModal } from "../modal";
 
-export const ChatComponent = () => {
+export const ChatComponent = (props: { messages?: Message[] }) => {
+  const { messages } = props;
   const dispatch = useDispatch();
   const receiver = useSelector<RootState, User>((state) => getReceiver(state));
-  const [chats, setChats] = useState<Message[]>([]);
-  const showChat = useSelector<RootState, boolean>((state) =>
-    getShowChat(state)
-  );
   const sender = useSelector<RootState, User>((state) => getUser(state));
+  const roomid = useSelector<RootState, number>((state) => getRoom(state));
   const chatRef = useRef<HTMLTextAreaElement>(null);
   const divRef = useRef<HTMLDivElement>(null);
   const {
@@ -24,125 +24,81 @@ export const ChatComponent = () => {
     isLoading: chatLoading,
     refetch,
   } = useGetChatQuery(receiver.id);
+  const [chats, setChats] = useState<Message[]>(() => messages ?? []);
+  const [chatsToServer, setChatsToServer] = useState<Message[]>([]);
   const [sendChat, { isSuccess }] = useSetChatMutation();
-  const messages = useMemo<Message[]>(() => {
-    if (chatFromServer) return chatFromServer.messages;
-    return [];
+
+  useEffect(() => {
+    if (chatFromServer) setChats([...chats, ...chatFromServer.messages]);
   }, [chatFromServer]);
 
-  function placeChat(c?: Message) {
-    c &&
-      flushSync(() => {
-        setChats([...chats, c]);
-      });
-    const div = divRef.current;
-    if (div) {
-      div!.scrollTop = div!.scrollHeight;
-    }
-  }
-
-  async function sendMsg() {
-    const c: Message = {
-      text: chatRef.current!.value,
-      createdAt: new Date().toDateString(),
-      senderId: sender.id!,
-      senderName: sender.name,
-    };
-    chatRef.current!.value = "";
-    sendChat({ receiverId: receiver.id!, message: c })
-      .unwrap()
-      .then(() => {
-        socket.emit("chat", receiver.name, c);
-      });
-    placeChat(c);
-  }
-
-  function setClassname(senderId: number) {
-    return senderId === sender.id ? "sender" : "receiver";
-  }
-
   useEffect(() => {
-    !isSuccess && placeChat();
-  });
-
-  useEffect(() => {
-    if (localStorage.getItem("chat")) refetch();
-  }, [receiver.id]);
-
-  useEffect(() => {
-    return () => {
-      localStorage.setItem("chat", receiver.id!.toString());
-    };
-  });
-
-  useEffect(() => {
-    const newChat = (chat: Message) => {
-      placeChat(chat);
-    };
-    socket.on("receiveChat", newChat);
-    return () => {
-      socket.off("receiveChat", newChat);
-    };
-  });
+    socket.on("receiveChat", (newChat: Message) => {
+      setChats([...chats, newChat]);
+    });
+  }, []);
 
   return chatLoading ? (
     <Spinner />
   ) : (
-    <div className="chat">
-      <div>
+    <div className="modal">
+      <div className="close">
+        <button
+          onClick={() => {
+            !messages && sendChat({ receiverId: receiver.id!, message: chatsToServer });
+            dispatch(showModal({ display: false, type: "close" }));
+          }}
+        >
+          <span className="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div className="chatdiv">
+        <h3>{receiver.name}</h3>
+        <div ref={divRef}>
+          {chats.length > 0 &&
+            chats.map((chat, i) => <MessageComponent message={chat} key={i} />)}
+        </div>
         <div>
-          <button
+          <textarea
+            placeholder="Chat"
+            ref={chatRef}
+            onKeyUp={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                const message: Message = {
+                  text: chatRef.current!.value,
+                  createdAt: new Date().toDateString(),
+                  type: MessageType.SENT,
+                };
+                chatRef.current?.value;
+                setChats([...chats, message]);
+                setChatsToServer([...chatsToServer, message]);
+                socket.emit("newchat", sender, `${receiver.name}${roomid}`, {
+                  ...message,
+                  type: MessageType.RECEIVED,
+                });
+              }
+            }}
+          ></textarea>
+          <span
+            className="material-symbols-outlined"
             onClick={() => {
-              dispatch(setShowChat(false));
+              const message: Message = {
+                text: chatRef.current!.value,
+                createdAt: new Date().toDateString(),
+                type: MessageType.SENT,
+              };
+              setChats([...chats, message]);
+              setChatsToServer([...chatsToServer, message]);
+              socket.emit("newchat", sender.name, `${receiver.name}${roomid}`, {
+                ...message,
+                type: MessageType.RECEIVED,
+              });
             }}
           >
-            <span className="material-symbols-outlined">close</span>
-          </button>
+            send
+          </span>
         </div>
-        <h3>{receiver.name}</h3>
-      </div>
-      <div ref={divRef}>
-        {messages.map((message, i, arr) => {
-          const last = i === 0 ? message : arr[i - 1];
-          return (
-            <div key={message.id}>
-              {(last.createdAt !== message.createdAt || i === 0) && (
-                <h5>{message.createdAt}</h5>
-              )}
-              <div className={setClassname(message.senderId)}>
-                {message.text}
-              </div>
-            </div>
-          );
-        })}
-        {chats.length > 0 &&
-          chats.map((rc, i) => {
-            return i === 0 &&
-              messages.length > 0 &&
-              messages[messages.length - 1].createdAt !== rc.createdAt ? (
-              <div key={rc.id}>
-                <h5>{rc.createdAt}</h5>
-                <div className={setClassname(rc.senderId)}>{rc.text}</div>
-              </div>
-            ) : (
-              <div className={setClassname(rc.senderId)} key={rc.id}>
-                {rc.text}
-              </div>
-            );
-          })}
-      </div>
-      <div>
-        <textarea
-          placeholder="Chat"
-          rows={1}
-          ref={chatRef}
-          onKeyUp={(e) => {
-            if (e.key === "Enter") sendMsg();
-          }}
-        ></textarea>
-        <span onClick={() => sendMsg()} className="material-symbols-outlined">
-          send
-        </span>
       </div>
     </div>
   );

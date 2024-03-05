@@ -1,8 +1,8 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import type { Chat, Conversation, Room, User } from "../../type";
 
-const baseUrl = "https://roomserver2.onrender.com";
-//const baseUrl = "http://localhost:3000";
+//const baseUrl = "https://roomserver2.onrender.com";
+const baseUrl = "http://localhost:3000";
 
 export const apiSlice = createApi({
   baseQuery: fetchBaseQuery({ baseUrl, credentials: "include" }),
@@ -15,9 +15,19 @@ export const apiSlice = createApi({
         url: "/deletetables",
       }),
     }),
-    getUser: builder.query({
+    getUser: builder.query<User, string>({
       query: () => ({
         url: "/user/getuser",
+      }),
+    }),
+    getMyRooms: builder.query<Room[] | undefined | null, string>({
+      query: (count) => ({
+        url: `/user/getmyrooms/${count}`,
+      }),
+    }),
+    getJoinedRooms: builder.query<Room[] | undefined | null, string>({
+      query: (count) => ({
+        url: `/user/getjoinedrooms/${count}`,
       }),
     }),
     getUserWithChats: builder.query({
@@ -38,7 +48,7 @@ export const apiSlice = createApi({
       }),
     }),
     getAllUsers: builder.query({ query: () => "/user/all" }),
-    createRoom: builder.mutation({
+    createRoom: builder.mutation<Room, Room>({
       query: (room) => ({
         method: "PUT",
         body: room,
@@ -54,26 +64,41 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: ["room"],
     }),
-    getAllRooms: builder.query<
-      {
-        toprooms: Room[] | undefined;
-        others: Room[] | undefined;
-        status: string | undefined;
-      },
-      number
-    >({
+    leaveRoom: builder.mutation({
+      query: (data) => ({
+        method: "POST",
+        body: data,
+        url: "room/leaveroom",
+      }),
+      invalidatesTags: ["room"],
+    }),
+    getAllRooms: builder.query<Room[] | undefined | null, number>({
       query: (pageno) => `/room/all/${pageno}`,
       providesTags: ["rooms"],
     }),
     getRoom: builder.query({
       query: (roomname) => `/room/${roomname}`,
     }),
-    getRoomWithUsers: builder.query({
-      query: (roomname) => `/room/withusers/${roomname}`,
+    getRoomWithConversations: builder.query<{room: Room, isMember: boolean}, number>({
+      query: (roomid) => `/room/${roomid}/withconversations`,
       providesTags: ["room"],
     }),
+    getRoomMembers: builder.query<
+      {
+        members: {
+          id: number;
+          name: string;
+        }[];
+      } | null,
+      { id: number; pageno: number }
+    >({
+      query: (data) => `/room/${data.id}/getmembers/${data.pageno}`,
+    }),
+    getTopics: builder.query<{ id: number; name: string }[], null>({
+      query: () => "/topics",
+    }),
     sayConversation: builder.mutation({
-      query: (conversation: Conversation) => ({
+      query: (conversation) => ({
         method: "PUT",
         url: "/conversation/create",
         body: conversation,
@@ -98,17 +123,17 @@ export const apiSlice = createApi({
       }),
     }),
     agree: builder.mutation({
-      query: (data: {conversationId: number, data: number[]}) => ({
+      query: (data: { conversationId: number; data: number }) => ({
         url: `/conversation/${data.conversationId}/agree`,
         method: "POST",
-        body: data.data
+        body: data.data,
       }),
     }),
     disagree: builder.mutation({
-      query: (data: {conversationId: number, data: number[]}) => ({
+      query: (data: { conversationId: number; data: number }) => ({
         url: `/conversation/${data.conversationId}/disagree`,
         method: "POST",
-        body: data.data
+        body: data.data,
       }),
     }),
     comment: builder.mutation({
@@ -119,8 +144,8 @@ export const apiSlice = createApi({
       }),
     }),
     getComments: builder.query({
-      query: (conversationId) => `/conversation/${conversationId}/getcomments`
-    })
+      query: (conversationId) => `/conversation/${conversationId}/getcomments`,
+    }),
   }),
 });
 
@@ -131,17 +156,23 @@ export const {
   useCreateRoomMutation,
   useGetAllRoomsQuery,
   useGetRoomQuery,
-  useGetRoomWithUsersQuery,
+  useGetRoomWithConversationsQuery,
+  useGetRoomMembersQuery,
+  useGetTopicsQuery,
   useUpdateUserMutation,
   useSayConversationMutation,
   useGetUserWithChatsQuery,
   useGetChatQuery,
   useSetChatMutation,
   useJoinRoomMutation,
+  useLeaveRoomMutation,
   useDeleteMutation,
   useLogoutMutation,
   useAgreeMutation,
   useCommentMutation,
   useDisagreeMutation,
-  useLazyGetCommentsQuery
+  useLazyGetCommentsQuery,
+  useLazyGetAllRoomsQuery,
+  useLazyGetJoinedRoomsQuery,
+  useLazyGetMyRoomsQuery,
 } = apiSlice;

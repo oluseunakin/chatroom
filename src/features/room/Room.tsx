@@ -1,245 +1,281 @@
 import { useDispatch, useSelector } from "react-redux";
 import type { RootState } from "../../store";
-import type { CN, Conversation, Message, Room, User } from "../../type";
+import type { Message, Room, User } from "../../type";
 import {
-  useGetRoomWithUsersQuery,
+  useGetRoomWithConversationsQuery,
   useJoinRoomMutation,
+  useLeaveRoomMutation,
   useSayConversationMutation,
 } from "../api/apiSlice";
-import { getMyRooms, setRoom } from "./roomStore";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { getUser } from "../user/userStore";
 import { socket } from "../socket";
-import { setChat } from "../chat/chatStore";
 import { Spinner } from "../../components/Spinner";
-import { getShowChat } from "../chat/chatStore";
 import { Conversations } from "../conversation/Conversations";
 import { enterRoom, getRoom, leaveRoom } from "../roomname";
 import {
   setConversationRoom,
   setConversations,
   reset,
+  setNewConversation,
 } from "../conversation/conversationStore";
-import { ChatComponent } from "../chat/Chat";
 import { ChatNotification } from "../notifications/ChatNotification";
+import { Notification } from "../notifications/Notification";
+import { RoomMembers } from "../../components/RoomMembers";
+import { showModal } from "../modal";
+import { Live } from "../live/Live";
+import { getLive, setLive } from "../live/liveStore";
 
-export function RoomExcerpt(props: { room: Room; showModal?: Function; setJoined?: Function }) {
-  const myrooms = useSelector<RootState, Room[]>((state) => getMyRooms(state));
-  const { room, showModal, setJoined } = props;
-  const me = useSelector<RootState, User>((state) => getUser(state));
-  const [joinroom, { isLoading }] = useJoinRoomMutation();
-  const inRoom = useMemo(() => myrooms.includes(room), [myrooms]);
+export function RoomExcerpt(props: { room: Room }) {
+  const { room } = props;
   const dispatch = useDispatch();
+
   return (
-    <div className="card">
-      {isLoading && <Spinner />}
+    <div
+      className="card"
+      onClick={() => {
+        dispatch(showModal({ type: "rc", display: true }));
+        dispatch(enterRoom(room.id));
+      }}
+    >
       <h3>{room.name}</h3>
-      {inRoom ? (
-        <button
-          onClick={() => {
-            dispatch(enterRoom(room.id));
-            showModal && showModal(true);
-            socket.emit("enterroom", room.id);
-          }}
-        >
-          <span className="material-symbols-outlined">door_open</span>
-        </button>
-      ) : (
-        <button
-          onClick={async () => {
-            await joinroom(room.name).unwrap();
-            dispatch(setRoom(room));
-            setJoined && setJoined(true)
-            socket.emit("joinroom", room.id, room.name, me.name);
-          }}
-        >
-          <span className="material-symbols-outlined">group_add</span>
-        </button>
-      )}
+      <span className="material-symbols-outlined">door_open</span>
     </div>
   );
 }
 
-export function RoomComponent(props: { showModal: Function }) {
-  const { showModal } = props;
-  const entered = useSelector<
-    RootState,
-    { id: number; entered: Array<number> }
-  >((state) => getRoom(state));
+export function RoomComponent() {
   const me = useSelector<RootState, User>((state) => getUser(state));
+  const [roomModal, setRoomModal] = useState({ display: false, type: "" });
   const divRef = useRef<HTMLDivElement>(null);
   const dispatch = useDispatch();
-  let {
-    currentData: room,
-    isLoading: roomLoading,
-    refetch,
-  } = useGetRoomWithUsersQuery(entered.id);
-  const [showUsers, setShowUsers] = useState(false);
-  const users = useMemo(
-    () =>
-      room ? room.users.filter((user: User) => user.name !== me.name) : [],
-    [room]
-  );
-  const [members, setMembers] = useState<number[]>([]);
-  const showChat = useSelector<RootState, boolean>((state) =>
-    getShowChat(state)
+  const entered = useSelector<RootState, number>((state) => getRoom(state));
+  const { currentData, isLoading: roomLoading } =
+    useGetRoomWithConversationsQuery(entered);
+  const [becomeMember, { isLoading: joinRoomLoading }] = useJoinRoomMutation();
+  const [unsubscribe, { isLoading: leaveRoomLoading }] = useLeaveRoomMutation();
+  const [isMember, setIsMember] = useState(false);
+  const isOwner = useMemo(
+    () => me.id == currentData?.room?.creatorId,
+    [currentData?.room, me]
   );
   const sayRef = useRef<HTMLTextAreaElement>(null);
   const [converse, { isLoading: converseLoading }] =
     useSayConversationMutation();
-  const [chatNotification, setChatNotification] = useState<CN>({
+  const [chatNotification, setChatNotification] = useState<{
+    messages: Message[];
+    count: number;
+    sender: User | null;
+  }>({
     messages: [],
     count: 0,
-    show: false,
+    sender: null,
   });
-
-  function isInRoom(userId: number) {
-    return members.includes(userId);
-  }
-
-  useEffect(() => {
-    return () => {
-      dispatch(reset());
-    };
-  }, [entered.id]);
+  const [notification, setNotification] = useState<{
+    noti: string[];
+    count: number;
+  }>({ noti: [], count: 0 });
+  const live = useSelector<RootState, { laiver: string; isLive: boolean }>(
+    (state) => getLive(state)
+  );
 
   useEffect(() => {
-    if (entered.entered.includes(entered.id) && room) {
-      refetch();
+    if (currentData?.room) {
+      setIsMember(currentData.isMember);
     }
-  }, [room, entered]);
+  }, [currentData, me]);
 
   useEffect(() => {
-    if (room) {
-      dispatch(setConversations(room.conversations));
-      dispatch(setConversationRoom({ id: room.id, name: room.name }));
-      socket.emit("inroom", room.id, me.id);
+    if (currentData && currentData.room && currentData.room.conversations) {
+      dispatch(setConversations(currentData.room.conversations));
+      dispatch(
+        setConversationRoom({
+          id: currentData.room.id,
+          name: currentData.room.name,
+        })
+      );
     }
-  }, [room]);
+  }, [currentData]);
 
-  const goneoff = (offed: number[]) => {
-    setMembers(offed);
-  };
-  const enteredRoom = (online: number[]) => {
-    setMembers(online);
-  };
-  const receiveChat = (message: Message) => {
-    if (!showChat) {
-      setChatNotification({
-        ...chatNotification,
-        count: chatNotification.count + 1,
-        messages: [...chatNotification.messages!, message],
-      });
-    }
-  };
   useEffect(() => {
     socket
-    .on("goneoff", goneoff)
-    .on("enteredroom", enteredRoom)
-    .on("receiveChat", receiveChat);
-    return () => {
-      socket.off("goneoff", goneoff).off("enteredroom", enteredRoom).off("receiveChat", receiveChat)
-    }
-  })
+      .on("receiveChat", (message, sender) => {
+        setChatNotification({
+          ...chatNotification,
+          count: chatNotification.count + 1,
+          messages: [...chatNotification.messages!, message],
+          sender,
+        });
+      })
+      .on("joinedroom", (message, joiner) => {
+        if (joiner !== me.name)
+          setNotification({
+            ...notification,
+            noti: [message, ...notification.noti],
+            count: notification.count + 1,
+          });
+      })
+      .on("leftroom", (message, lefter) => {
+        if (lefter !== me.name)
+          setNotification({
+            ...notification,
+            noti: [message, ...notification.noti],
+            count: notification.count + 1,
+          });
+      })
+      .on("incomingLive", (sdp, sender: string) => {
+        sender !== me.name && dispatch(setLive({ laiver: sender, isLive: true, type: "incoming" }));
+      });
+    isMember && socket.emit("inroom", entered, me.name);
+  });
 
   if (roomLoading) return <Spinner />;
 
   return (
     <div className="modal" ref={divRef}>
-      {showChat && <ChatComponent />}
+      {live.isLive && <Live />}
+      {roomModal.display && roomModal.type === "roomnoti" && (
+        <Notification
+          roomNotification={notification}
+          setRoomModal={setRoomModal}
+        />
+      )}
+      {roomModal.display && roomModal.type === "members" && (
+        <RoomMembers setRoomModal={setRoomModal} />
+      )}
+      {roomModal.display && roomModal.type === "chatnoti" && (
+        <ChatNotification
+          sender={chatNotification.sender!}
+          messages={chatNotification.messages!}
+          setChatNotification={setChatNotification}
+          setRoomModal={setRoomModal}
+        />
+      )}
       <div className="close">
         <button
           onClick={() => {
             dispatch(leaveRoom());
-            showModal(false);
-            socket.emit("leftroom", room.id, me.id);
+            dispatch(reset());
+            dispatch(showModal({ display: false, type: "close" }));
           }}
         >
           <span className="material-symbols-outlined">close</span>
         </button>
       </div>
-      <div className="header">
-        <h2>{room.name}</h2>
+      <div className="rfdiv">
         <div>
-          <button onClick={() => setShowUsers(!showUsers)}>
-            <span className="material-symbols-outlined">group</span>
-          </button>
-          <button
-            className="super"
-            onClick={() => {
-              setChatNotification({
-                ...chatNotification,
-                show: !chatNotification.show,
-              });
-            }}
-          >
-            <span className="material-symbols-outlined">message</span>
-            {chatNotification.count > 0 && <div>{chatNotification.count}</div>}
-          </button>
+          <h2>{currentData!.room!.name}</h2>
+          <h3>{currentData!.room!.topic!.name}</h3>
         </div>
-        {showUsers && (
-          <div className="users">
-            {users.map((user: User, i: number) => (
+        <div>
+          {!isOwner &&
+            (isMember ? (
               <button
-                key={user.id}
-                value={user.name}
-                onClick={(e) => {
-                  if (isInRoom(user.id!))
-                    dispatch(setChat({ receiver: user, showChat: true }));
-                  else
-                    alert("You can only chat when the person is in the room");
+                onClick={async () => {
+                  await unsubscribe(currentData!.room?.id);
+                  socket.emit(
+                    "leaveroom",
+                    currentData!.room?.id,
+                    currentData!.room?.name,
+                    me.name
+                  );
                 }}
               >
-                {user.name}{" "}
-                <span
-                  className={isInRoom(user.id!) ? "online" : "offline"}
-                ></span>
+                Leave
+              </button>
+            ) : (
+              <button
+                onClick={async () => {
+                  await becomeMember(currentData!.room?.id);
+                  socket.emit(
+                    "joinroom",
+                    currentData!.room?.id,
+                    currentData!.room?.name,
+                    me.name
+                  );
+                }}
+              >
+                Join
               </button>
             ))}
-          </div>
-        )}
-        {chatNotification.show && (
-          <ChatNotification
-            notifications={chatNotification.messages!}
-            setChatNotification={setChatNotification}
-          />
-        )}
+          {(isMember || isOwner) && (
+            <>
+              <button
+                onClick={() => {
+                  setRoomModal({ display: true, type: "members" });
+                }}
+              >
+                <span className="material-symbols-outlined">group</span>
+              </button>
+              <button
+                onClick={() => {
+                  setRoomModal({ display: true, type: "chatnoti" });
+                }}
+              >
+                <span className="material-symbols-outlined">message</span>
+                {chatNotification.count > 0 && (
+                  <div>{chatNotification.count}</div>
+                )}
+              </button>
+              <button
+                onClick={() => {
+                  setNotification({
+                    ...notification,
+                    count: notification.count - 1,
+                  });
+                  setRoomModal({ display: true, type: "roomnoti" });
+                }}
+              >
+                <span>notification</span>
+                {notification.count > 0 && (
+                  <span className="noti">{notification.count}</span>
+                )}
+              </button>
+            </>
+          )}
+        </div>
       </div>
-      {converseLoading ? (
-        <Spinner />
-      ) : (
-        <div className="convo">
-          {
+      {(isMember || isOwner) &&
+        (converseLoading ? (
+          <Spinner />
+        ) : (
+          <div className="convo">
+            <div>
+              {currentData && currentData.room && (
+                <Conversations divRef={divRef} />
+              )}
+            </div>
             <div>
               <textarea ref={sayRef} placeholder="Say Hello"></textarea>
-              <span
+
+              <label>
+                <span>Add Media</span>
+                <input type="file" />
+              </label>
+              <button
                 onClick={async () => {
                   const said = sayRef.current?.value!;
-                  const message: Message = {
-                    text: said,
-                    createdAt: new Date().toDateString(),
-                    senderId: me.id!,
-                    senderName: me.name,
-                  };
-                  const conversation: Conversation = {
-                    room: { id: room.id, name: room.name },
-                    message,
-                    talker: { ...me },
-                  };
+                  const newConversation = await converse({
+                    roomId: currentData!.room!.id,
+                    convo: said,
+                  }).unwrap();
                   sayRef.current!.value = "";
-                  const newConversation = await converse(conversation).unwrap();
-                  //dispatch(setNewConversation(newConversation));
-                  socket.emit("receivedRoomMessage", newConversation);
+                  dispatch(setNewConversation(newConversation));
+                  socket.emit("newconversation", newConversation);
                 }}
-                className="material-symbols-outlined"
               >
-                send
-              </span>
+                <span className="material-symbols-outlined">send</span>
+              </button>
+              <button
+                onClick={() => {
+                  dispatch(setLive({laiver: me.name, type: "going", isLive: true}));
+                }}
+              >
+                Go Live
+              </button>
             </div>
-          }
-          {room && <Conversations divRef={divRef} />}
-        </div>
-      )}
+          </div>
+        ))}
     </div>
   );
 }

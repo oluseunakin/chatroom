@@ -6,34 +6,30 @@ import { useDispatch, useSelector } from "react-redux";
 import { getUser } from "../user/userStore";
 import { RootState } from "../../store";
 import { socket } from "../socket";
-import {
-  agree as setAg,
-  disagree as setDg,
-  update,
-} from "../conversation/conversationStore";
 import { Spinner } from "../../components/Spinner";
 import { Comments } from "../../components/Comments";
 
 export const ConversationComponent = (props: {
-  convo: Conversation;
+  conversation: Conversation;
   room: Room;
   isNew?: boolean;
 }) => {
-  const [agree] = useAgreeMutation();
-  const [disagree] = useDisagreeMutation();
+  const [iAgree] = useAgreeMutation();
+  const [iDisagree] = useDisagreeMutation();
+  const me = useSelector<RootState, User>((state) => getUser(state));
   const [getComments, { isLoading }] = useLazyGetCommentsQuery();
-  const { convo, room, isNew } = props;
-  const [reload, setReload] = useState(false);
-  const [agreeReload, setAgreeReload] = useState({ id: -1, data: [] });
-  const [disagreeReload, setDisagreeReload] = useState({ id: -1, data: [] });
+  const { conversation, room, isNew } = props;
+  const [agree, setAgree] = useState(() =>
+    conversation.agree ? conversation.agree : []
+  );
+  const [disagree, setDisagree] = useState(() =>
+    conversation.disagree ? conversation.disagree : []
+  );
   const divRef = useRef<HTMLDivElement>(null);
-  const oldagree = convo.agree;
-  const oldDisagree = convo.disagree;
-  const talker = useSelector<RootState, User>((state) => getUser(state));
-  const [comments, setComments] = useState<Conversation[] | undefined>()
+  const [comments, setComments] = useState<Conversation[] | undefined>();
   const dispatch = useDispatch();
 
-  useEffect(() => {
+  /* useEffect(() => {
     if (reload) {
       agree({ data: oldagree!, conversationId: convo.id! });
       socket.emit("agreed", room.id, convo.id, talker.id, oldagree);
@@ -47,39 +43,19 @@ export const ConversationComponent = (props: {
       socket.emit("disagreed", convo.room.id, convo.id, talker.id, oldDisagree);
       setReload(false);
     }
-  }, [oldDisagree]);
-
-  useEffect(() => {
-    if (agreeReload.id !== -1) {
-      dispatch(
-        update({ id: agreeReload.id, changes: { agree: agreeReload.data } })
-      );
-    }
-  }, [agreeReload]);
-
-  useEffect(() => {
-    if (disagreeReload.id !== -1)
-      dispatch(
-        update({
-          id: disagreeReload.id,
-          changes: { disagree: disagreeReload.data },
-        })
-      );
-  }, [disagreeReload]);
+  }, [oldDisagree]); */
 
   useEffect(() => {
     socket
       .on("comment", (data: Conversation) => {})
-      .on("agree", (id, userid, data) => {
-        userid !== talker.id && setAgreeReload({ id, data });
+      .on("agree", (conversationId, agreer: User) => {
+        conversation.id == conversationId && setAgree([...agree!, agreer]);
       })
-      .on("disagree", (id, userid, data) => {
-        userid !== talker.id && setDisagreeReload({ id, data });
+      .on("disagree", (conversationId, disagreer: User) => {
+        conversation.id == conversationId &&
+          setDisagree([...disagree!, disagreer]);
       });
-    return () => {
-      socket.removeAllListeners();
-    };
-  });
+  }, []);
 
   useEffect(() => {
     if (divRef.current && isNew) {
@@ -91,47 +67,48 @@ export const ConversationComponent = (props: {
   }, [isNew]);
 
   return (
-    <div ref={divRef}>
-      <h3>{convo.talker?.name}</h3>
-      <div>
-        <div>{convo.message.text}</div>
-        <div>{convo.message.createdAt}</div>
-      </div>
+    <div ref={divRef} className="conversediv">
+      <h3>{conversation.talker?.name}</h3>
+      <div>{conversation.convo}</div>
+      <div>{new Date(conversation.createdAt).toDateString()}</div>
       <div>
         <button
-          onClick={() => {
-            dispatch(setAg({ id: convo.id, userid: talker.id }));
-            setReload(true);
+          onClick={async () => {
+            setAgree([...agree!, me]);
+            socket.emit("useragree", me, conversation.id);
+            await iAgree({ conversationId: conversation.id!, data: me.id! });
           }}
         >
+          <span>{agree.length}</span>
           <span className="material-symbols-outlined agree">
             sentiment_very_satisfied
           </span>
-          {oldagree!.length}
-          <span></span>
-        </button>
-        <button
-          onClick={() => {
-            dispatch(setDg({ userid: talker.id, id: convo.id }));
-            setReload(true);
-          }}
-        >
-          <span className="material-symbols-outlined disagree">
-            sentiment_very_dissatisfied
-          </span>
-          <span>{oldDisagree!.length}</span>
         </button>
         <button
           onClick={async () => {
-            const comments = await getComments(convo.id!).unwrap();
-            setComments(comments.comments)   
+            setDisagree([...disagree!, me]);
+            socket.emit("userdisagree", me, conversation.id);
+            await iDisagree({ conversationId: conversation.id!, data: me.id! });
           }}
         >
+          <span>{disagree.length}</span>
+          <span className="material-symbols-outlined disagree">
+            sentiment_very_dissatisfied
+          </span>
+        </button>
+        <button
+          onClick={async () => {
+            const comments = await getComments(conversation.id!).unwrap();
+            setComments(comments.comments);
+          }}
+        >
+          <span>{conversation._count.comments}</span>
           <span className="material-symbols-outlined comment">reply</span>
-          <span>{convo.commentsCount}</span>
         </button>
       </div>
-      {comments && <Comments comments={comments} room={room} convo={convo} />}
+      {comments && (
+        <Comments comments={comments} room={room} convo={conversation} />
+      )}
       {isLoading && <Spinner />}
     </div>
   );

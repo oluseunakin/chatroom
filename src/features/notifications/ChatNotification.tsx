@@ -1,35 +1,57 @@
-import type { CN, Message } from "../../type";
-import { useDispatch } from "react-redux";
-import { setChat } from "../chat/chatStore";
+import type { Message, User } from "../../type";
+import { useDispatch, useSelector } from "react-redux";
+import { getReceiver, setReceiver } from "../chat/chatStore";
+import { RootState } from "../../store";
+import { ChatComponent } from "../chat/Chat";
 
 export const ChatNotification = (props: {
-  notifications: Message[];
-  setChatNotification: React.Dispatch<React.SetStateAction<CN>>;
+  messages: Message[];
+  sender: User;
+  setChatNotification: React.Dispatch<
+    React.SetStateAction<{
+      messages: Message[];
+      count: number;
+      sender: User | null;
+    }>
+  >;
+  setRoomModal: React.Dispatch<
+    React.SetStateAction<{
+      display: boolean;
+      type: string;
+    }>
+  >;
 }) => {
-  const { notifications, setChatNotification } = props;
+  const { messages, setChatNotification, sender, setRoomModal } = props;
   const dispatch = useDispatch();
+  const receiver = useSelector<RootState, User>((state) => getReceiver(state));
+
   return (
-    <div className="noti">
-      {notifications.map((notification, i) => (
+    <div className="modal">
+      {receiver.id != -1 && <ChatComponent messages={messages}/>}
+      <div className="close">
         <button
-          className="chatnoti"
-          key={i}
           onClick={() => {
-            dispatch(
-              setChat({
-                receiver: {
-                  name: notification.senderName,
-                  id: notification.senderId,
-                },
-                showChat: true,
-              })
-            );
-            setChatNotification((cn) => ({ ...cn, show: false, count: cn.count-1 }));
+            setRoomModal({ display: false, type: "chatnoti" });
           }}
         >
-          <p>You have a new message from </p> <h5>{notification.senderName}</h5>
+          <span className="material-symbols-outlined">close</span>
         </button>
-      ))}
+      </div>
+      <div className="chatnotidiv">
+        {messages.map((message, i) => (
+          <div>
+            <button
+              className="chatnoti"
+              key={i}
+              onClick={() => {
+                dispatch(setReceiver(sender));
+              }}
+            >
+              <p>You have a new message from </p> <h5>{sender.name}</h5>
+            </button>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };

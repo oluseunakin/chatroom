@@ -1,18 +1,22 @@
 import { configureStore } from '@reduxjs/toolkit'
 import userReducer from './features/user/userStore'
+import chatReducer from "./features/chat/chatStore"
+import modalReducer from "./features/modal"
+import roomsReducer from "./features/room/roomStore"
+import liveReducer from "./features/live/liveStore"
 import { apiSlice } from './features/api/apiSlice'
-import roomReducer from './features/room/roomStore'
 import roomnameReducer from './features/roomname'
-import chatReducer from './features/chat/chatStore'
 import conversationReducer from './features/conversation/conversationStore'
 
 export const store =  configureStore({
   reducer: {
     user: userReducer,
-    rooms: roomReducer,
     roomname: roomnameReducer,
-    chat: chatReducer,
     conversations: conversationReducer,
+    rooms: roomsReducer,
+    chat: chatReducer,
+    modal: modalReducer,
+    live: liveReducer,
     [apiSlice.reducerPath]: apiSlice.reducer
   },
   middleware: getDefaultMiddleware => getDefaultMiddleware().concat(apiSlice.middleware)

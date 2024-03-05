@@ -2,312 +2,160 @@ import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   apiSlice,
-  useCreateRoomMutation,
   useDeleteMutation,
-  useGetAllRoomsQuery,
   useGetUserQuery,
   useLogoutMutation,
 } from "../features/api/apiSlice";
-import { RoomComponent, RoomExcerpt } from "../features/room/Room";
-import {
-  getMyRooms,
-  reset as roomReset,
-  setMyRooms,
-} from "../features/room/roomStore";
+import { RoomComponent } from "../features/room/Room";
 import { getUser, reset as userReset } from "../features/user/userStore";
 import { RootState } from "../store";
-import type { Room, User } from "../type";
 import { socket } from "../features/socket";
-import { reset as chatReset } from "../features/chat/chatStore";
-import { RoomNotification } from "../features/notifications/RoomNotification";
+import { Notification } from "../features/notifications/Notification";
 import { Spinner } from "./Spinner";
 import { getRoom } from "../features/roomname";
-import Nothing from "./Nothing";
+import "../styles/welcome.css";
+import { CreateRoom } from "./CreateRoom";
+import { RoomList } from "./RoomList";
+import { getModal, showModal } from "../features/modal";
+import { getJoinedRooms, getMyRooms } from "../features/room/roomStore";
+import { Room, User } from "../type";
 
 export function Welcome() {
   const dispatch = useDispatch();
-  const [modal, showModal] = useState(false);
-  const [joined, setJoined] = useState(false);
-  const userr = useSelector<RootState, User>((state) => getUser(state));
-  const { data: user, isLoading: userLoading } = useGetUserQuery("");
-  const myRooms = useSelector<RootState, Room[]>((state) => getMyRooms(state));
-  const enteredRoom = useSelector<RootState, { id: number; entered: number[] }>(
-    (state) => getRoom(state)
+  const modal = useSelector<RootState, { display: boolean; type: string }>(
+    (state) => getModal(state)
   );
-  const [roomname, setRoomname] = useState("");
+  const me = useSelector<RootState, User>((state) => getUser(state));
+  const { data: user, isLoading: userLoading } = useGetUserQuery("");
+  const enteredRoom = useSelector<RootState, number>((state) => getRoom(state));
   const [pageno, setPageNo] = useState(0);
-  const [reload, setReload] = useState(false);
   const [logout] = useLogoutMutation();
-  const {
-    data: allrooms,
-    currentData,
-    isLoading: roomsLoading,
-    isFetching: roomsFetching,
-    refetch,
-  } = useGetAllRoomsQuery(pageno);
-  const [latest, setLatest] = useState(allrooms);
-  const [createRoom, { isLoading: roomLoading }] = useCreateRoomMutation();
   const deleteRef = useRef<HTMLInputElement>(null);
-  const [deleete, { isLoading }] = useDeleteMutation();
-  const [menu, setMenu] = useState({ display: true, clicked: false });
-  const [myrooms, setMyrooms] = useState({ display: true, clicked: false });
-  const [roomNotification, setRoomNotification] = useState<{
+  const [deleete] = useDeleteMutation();
+  const [notification, setNotification] = useState<{
     count: number;
     noti: string[];
-    show: boolean;
   }>({
     count: 0,
     noti: [],
-    show: false,
   });
-
-  useEffect(() => {
-    if (user) {
-      user.myrooms && dispatch(setMyRooms(user.myrooms));
-      socket.emit(
-        "online",
-        user.name,
-        user.myrooms.map((room: Room) => room.id)
-      );
-    }
-  }, [user]);
-
-  useEffect(() => {
-    !latest?.status && window.addEventListener("scroll", bodyScroll);
-  }, [latest]);
-
-  useEffect(() => {
-    if (!roomsLoading && !allrooms?.status) {
-      setLatest(allrooms);
-    } else
-      setLatest({
-        toprooms: Array<Room>(),
-        others: Array<Room>(),
-        status: undefined,
-      });
-  }, [roomsLoading]);
-
-  useEffect(() => {
-    if (!roomsFetching && pageno !== 0) {
-      if (currentData!.status) {
-        window.removeEventListener("scroll", bodyScroll);
-      } else {
-        const oldTopRooms = latest!.toprooms!;
-        const oldOthers = latest!.others!;
-        currentData &&
-          setLatest({
-            toprooms: [...oldTopRooms, ...currentData.toprooms!],
-            others: [...oldOthers, ...currentData.others!],
-            status: latest?.status,
-          });
-        setReload(false);
-      }
-    }
-  }, [roomsFetching, pageno]);
-
-  window.onresize = () => {
-    if (window.innerWidth >= 799) setMenu({ ...menu, display: false });
-    else setMenu({ ...menu, display: true });
-  };
+  const [type, setType] = useState("myrooms");
+  const myRooms = useSelector<RootState, Room[]>((state) => getMyRooms(state));
+  const joinedRooms = useSelector<RootState, Room[]>((state) =>
+    getJoinedRooms(state)
+  );
 
   function bodyScroll() {
     window.requestAnimationFrame(() => {
       const loadPosition = Math.floor(0.9 * document.body.scrollHeight);
       const scrollHeight = window.scrollY + window.innerHeight;
       if (scrollHeight >= loadPosition) {
-        setReload(true);
+        setPageNo((pageno) => pageno++);
       }
     });
   }
 
   useEffect(() => {
-    if (reload) {
-      setPageNo((oldno) => oldno + 1);
-    }
-  }, [reload]);
-
-  useEffect(() => {
-    if (pageno > 0) {
-      refetch();
-    }
-  }, [pageno]);
-
-  useEffect(() => {
-    if (window.innerWidth >= 640) setMenu({ ...menu, display: false });
-  }, [window.innerWidth]);
+    window.addEventListener("scroll", bodyScroll);
+  }, []);
 
   useEffect(() => {
     const joinedRoom = (message: string) => {
-      setRoomNotification({
-        ...roomNotification,
-        noti: [message, ...roomNotification.noti],
-        count: roomNotification.count + 1,
+      setNotification({
+        ...notification,
+        noti: [message, ...notification.noti],
+        count: notification.count + 1,
       });
     };
-    socket.on("joinedroom", joinedRoom);
+    socket.connect().on("joinedroom", joinedRoom);
     return () => {
-      socket.removeAllListeners()
+      socket.disconnect();
     };
+  }, []);
+
+  useEffect(() => {
+    if (myRooms && joinedRooms)
+      socket.emit(
+        "online",
+        me.name,
+        myRooms && myRooms.map((room: Room) => room.id),
+        joinedRooms && joinedRooms.map((room: Room) => room.id)
+      );
   });
 
-  function menuDiv() {
-    let r = "notmenudiv";
-    if (menu.clicked) r = "mmenu";
-    return r;
-  }
-
-  function myroomsDiv() {
-    let r = "notmyroomsdiv";
-    if (myrooms.clicked) r = "myroomsdiv";
-    return r;
-  }
-  if (userLoading || roomLoading) return <Spinner />;
+  if (userLoading) return <Spinner />;
 
   return (
-    <div className={modal ? "active" : ""}>
-      {roomNotification.show && (
-        <RoomNotification
-          roomNotification={roomNotification}
-          setRoomNotification={setRoomNotification}
+    <>
+      {modal.display && modal.type === "noti" && (
+        <Notification
+          roomNotification={notification}
         />
       )}
-      {modal && enteredRoom.id !== -1 && (
-        <RoomComponent showModal={showModal} />
+      {modal.display && modal.type === "rc" && enteredRoom != -1 && (
+        <RoomComponent />
       )}
+      {modal.display && modal.type === "cr" && <CreateRoom />}
       <header>
-        {menu.display && (
-          <div className="menu">
-            <button
-              className="material-symbols-outlined"
-              onClick={() => setMenu({ ...menu, clicked: !menu.clicked })}
-            >
-              menu
-            </button>
-          </div>
-        )}
-        {
-          <div className={menuDiv()}>
-            <div className="menudiv">
-              {user.id === 1860 && (
-                <div className="create">
-                  <div>
-                    <input
-                      placeholder="Type the room name"
-                      onChange={(e) => {
-                        setRoomname(e.target.value);
-                      }}
-                    />
-                    <span
-                      className="material-symbols-outlined"
-                      onClick={async () => {
-                        const newroom = { name: roomname };
-                        await createRoom(newroom).unwrap();
-                      }}
-                    >
-                      add
-                    </span>
-                  </div>
-                  <div>
-                    <input
-                      ref={deleteRef}
-                      placeholder="Delete"
-                      onKeyUp={async (e) => {
-                        if (e.key === "Enter") {
-                          alert(
-                            await deleete(deleteRef.current!.value).unwrap()
-                          );
-                        }
-                      }}
-                    />
-                  </div>
-                </div>
-              )}
-              <button
-                className="super"
-                onClick={() =>
-                  setMyrooms({ ...myrooms, clicked: !myrooms.clicked })
-                }
-              >
-                <span>My Rooms</span>
-                {joined && (
-                  <div className="material-symbols-outlined">star</div>
-                )}
-              </button>
-              <button
-                onClick={() => {
-                  setRoomNotification({
-                    ...roomNotification,
-                    count: roomNotification.count - 1,
-                    show: true,
-                  });
-                }}
-              >
-                <span className="material-symbols-outlined">
-                  manage_accounts
-                </span>
-                {roomNotification.count > 0 && (
-                  <div>{roomNotification.count}</div>
-                )}
-              </button>
-              <button
-                onClick={(e) => {
-                  dispatch(roomReset());
-                  dispatch(userReset());
-                  dispatch(chatReset());
-                  logout("");
-                  dispatch(apiSlice.util.resetApiState());
-                  socket.disconnect()
-                }}
-              >
-                <span className="material-symbols-outlined">logout</span>
-              </button>
-            </div>
-            {myRooms && myrooms.display && (
-              <div className={myroomsDiv()}>
-                {myRooms.map((room: Room, i: number) => (
-                  <RoomExcerpt room={room} key={i} showModal={showModal} />
-                ))}
-              </div>
+        <h1>{user!.name}</h1>
+        <div>
+          <button
+            onClick={() => {
+              dispatch(showModal({ display: true, type: "cr" }));
+            }}
+          >
+            Create a Room
+          </button>
+          <button
+            onClick={() => {
+              setNotification({
+                ...notification,
+                count: notification.count - 1,
+              });
+              dispatch(showModal({ display: true, type: "noti" }));
+            }}
+          >
+            <span className="material-symbols-outlined">manage_accounts</span>
+            {notification.count > 0 && (
+              <span>{notification.count}</span>
             )}
-          </div>
-        }
-        <h1>{user.name}</h1>
-      </header>
-      {latest?.status || roomsLoading ? (
-        <Spinner />
-      ) : (
-        <div className="allrooms">
-          <div className="joinmessage">
-            Join or Enter a Room to Join the Conversation{" "}
-          </div>
-          <div>
-            <h2>Top Rooms</h2>
-            <hr />
-            {latest?.toprooms?.length == 0 ? (
-              <Nothing />
-            ) : (
-              <div>
-                {latest!.toprooms!.map((room: Room, i: number) => (
-                  <RoomExcerpt room={room} key={i} setJoined={setJoined} />
-                ))}
-              </div>
-            )}
-          </div>
-          <div>
-            <h2>Check these out</h2>
-            <hr />
-            {latest?.others?.length == 0 ? (
-              <Nothing />
-            ) : (
-              <div>
-                {latest!.others!.map((room: Room, i: number) => (
-                  <RoomExcerpt room={room} key={i} setJoined={setJoined} />
-                ))}
-              </div>
-            )}
-          </div>
+          </button>
+          <button
+            onClick={() => {
+              dispatch(userReset());
+              localStorage.clear();
+              logout("");
+              dispatch(apiSlice.util.resetApiState());
+              socket.disconnect();
+            }}
+          >
+            <span className="material-symbols-outlined">logout</span>
+          </button>
         </div>
-      )}
-    </div>
+      </header>
+      <div>
+        <main>
+          <h2>
+            <button
+              onClick={() => {
+                setType("myrooms");
+              }}
+            >
+              <span>My Rooms</span>
+            </button>
+            <button
+              onClick={() => {
+                setType("joinedrooms");
+              }}
+            >
+              Following
+            </button>
+            <button onClick={() => setType("allrooms")}>See All Rooms</button>
+          </h2>
+          <RoomList type={type} />
+        </main>
+        <aside>Aside</aside>
+      </div>
+    </>
   );
 }

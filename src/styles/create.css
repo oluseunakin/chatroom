@@ -1,0 +1,55 @@
+.creatediv {
+  display: flex;
+  flex-direction: column;
+  padding: 5px;
+}
+.creatediv > div:first-of-type {
+  background-color: #add0b8;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+  font-size: xx-large;
+  font-weight: 600;
+  text-align: center;
+  height: max-content;
+  margin: 5px;
+}
+.creatediv > div:last-of-type {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  color: burlywood;
+  align-items: center;
+  flex-direction: column;
+  margin: 5px;
+}
+.creatediv > div:last-child label {
+  font-size: 3em;
+  text-align: center;
+}
+.creatediv > div:last-child input {
+  border-radius: 10px;
+  font-size: 1.5em;
+  width: 70%;
+  border: none;
+  padding: 10px;
+  margin: 10px;
+  text-align: center;
+}
+.creatediv > div:last-child button {
+  background-color: aquamarine;
+  font-size: 2em;
+  color: #242548;
+}
+@media screen and (min-width: 40em) {
+  .creatediv {
+    flex-direction: row;
+  }
+  .creatediv > div:first-of-type {
+    width: 40%;
+  }
+  .creatediv > div:last-of-type {
+    width: 60%;
+  }
+}

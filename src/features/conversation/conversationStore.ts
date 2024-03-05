@@ -1,18 +1,38 @@
 import { createEntityAdapter, createSlice } from "@reduxjs/toolkit";
 import { RootState } from "../../store";
-import { Conversation } from "../../type";
+import { Conversation, Room, RoomType, User } from "../../type";
 
 const conversationAdapter = createEntityAdapter<Conversation>();
-const initialState = conversationAdapter.getInitialState({
+const initialState = conversationAdapter.getInitialState<{
+  newConversation: Conversation;
+  room: Room;
+}>({
   newConversation: {
     id: -1,
-    message: { text: "", createdAt: "", senderId: 0, senderName: "" },
     talker: { name: "", id: -1 },
-    agree: Array<number>(),
-    disagree: Array<number>(),
-    room: { id: -1, name: "" },
+    agree: Array<User>(),
+    disagree: Array<User>(),
+    room: {
+      id: -1,
+      name: "",
+      topic: { id: -1, name: "" },
+      creatorId: -1,
+      type: RoomType.OPEN,
+    },
+    convo: "",
+    media: Array<string>(),
+    createdAt: new Date(),
+    _count: {
+      comments: 0,
+    },
   },
-  room: { id: -1, name: "" },
+  room: {
+    id: -1,
+    name: "",
+    topic: { id: -1, name: "" },
+    creatorId: -1,
+    type: RoomType.OPEN,
+  }
 });
 
 const conversationSlice = createSlice({
@@ -28,28 +48,6 @@ const conversationSlice = createSlice({
       return state;
     },
     reset: () => initialState,
-    agree: (state, action) => {
-      const { userid, id } = action.payload;
-      const oldAgree = state.entities[id]?.agree;
-      if (oldAgree) {
-        if (oldAgree.includes(userid)) {
-          const index = oldAgree.findIndex((val) => val === userid);
-          oldAgree.splice(index, 1);
-        } else oldAgree.push(userid);
-      }
-      return state;
-    },
-    disagree: (state, action) => {
-      const { userid, id } = action.payload;
-      const oldDisagree = state.entities[id]?.disagree;
-      if (oldDisagree) {
-        if (oldDisagree.includes(userid)) {
-          const index = oldDisagree.findIndex((val) => val === userid);
-          oldDisagree.splice(index, 1);
-        } else oldDisagree.push(userid);
-      }
-      return state;
-    },
     update: conversationAdapter.updateOne,
   },
   name: "conversations",
@@ -59,8 +57,6 @@ export const {
   setConversations,
   reset,
   setNewConversation,
-  agree,
-  disagree,
   setConversationRoom,
   update,
 } = conversationSlice.actions;

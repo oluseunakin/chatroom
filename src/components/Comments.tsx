@@ -24,7 +24,7 @@ export const Comments = (props: {
   const divRef = useRef<HTMLDivElement>(null);
   const [newData, setNewData] = useState<Conversation>();
   const { internalList, index } = useList({
-    newData,
+    newConversation: newData,
     oldData: comments,
     divRef,
   });
@@ -34,7 +34,7 @@ export const Comments = (props: {
     else return false;
   }
 
-  useEffect(() => {
+  /* useEffect(() => {
     const commented = (data: Conversation) => {
       dispatch(
         update({
@@ -48,7 +48,7 @@ export const Comments = (props: {
     return () => {
       socket.off("comment", commented);
     };
-  });
+  }); */
 
   if (commentLoading) return <Spinner />;
   return (
@@ -60,7 +60,7 @@ export const Comments = (props: {
           internalList.map((conversation: Conversation, i: number) => (
             <ConversationComponent
               key={conversation.id}
-              convo={conversation}
+              conversation={conversation}
               room={room}
               isNew={isNew(i)}
             />
@@ -80,7 +80,7 @@ export const Comments = (props: {
             };
             const newComment: Conversation = {
               room: { id: room.id, name: room.name },
-              message,
+              
               talker,
             };
             commentRef.current!.value = "";

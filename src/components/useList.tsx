@@ -1,33 +1,41 @@
 import { useState, useEffect } from "react";
 import { Conversation } from "../type";
+import { useSelector } from "react-redux";
+import { getConversations, getNewConversation } from "../features/conversation/conversationStore";
+import { RootState } from "../store";
 
 export function useList(props: {
-  newData: Conversation | undefined;
-  oldData: Conversation[];
   divRef?: React.RefObject<HTMLDivElement>;
 }) {
-  const { newData, oldData, divRef } = props;
+  const { divRef} = props;
+  const conversations = useSelector<RootState, Conversation[]>((state) =>
+    getConversations(state)
+  );
+  const newConversation = useSelector<RootState, Conversation>((state) =>
+    getNewConversation(state)
+  );
   const [index, setIndex] = useState(-1);
-  const [internalList, setInternalList] = useState<Conversation[]>(oldData);
+  const [internalList, setInternalList] = useState<Conversation[]>(conversations);
+
   useEffect(() => {
-    oldData && setInternalList(oldData);
-  }, [oldData]);
+    conversations && setInternalList(conversations);
+  }, [conversations]);
+  
+  useEffect(() => {
+    if (newConversation && newConversation?.id != -1 && divRef?.current) {
+      setIndex(Math.ceil(divRef.current.scrollTop / 222));
+    }
+  }, [newConversation]);
 
   useEffect(() => {
     if (index != -1) {
       setInternalList((oldList) => {
         let updatedList = [...oldList];
-        updatedList.splice(index, 0, newData!);
+        newConversation && updatedList.splice(index, 0, newConversation!);
         return updatedList;
       });
     }
   }, [index]);
-
-  useEffect(() => {
-    if (newData && newData?.id != -1 && divRef?.current) {
-      setIndex(Math.ceil(divRef.current.scrollTop / 222));
-    }
-  }, [newData]);
 
   return { internalList, index };
 }
