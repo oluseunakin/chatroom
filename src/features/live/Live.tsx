@@ -37,7 +37,6 @@ export function endLive(
     rtc.close();
     rtc = null;
   }
-  console.log(rtc)
   video.removeAttribute("src");
   video.removeAttribute("srcObject");
   dispatch(setLive({ laiver: "", isLive: false, type: "going" }));
@@ -45,7 +44,7 @@ export function endLive(
 
 export const Live = () => {
   const [finishedCountdown, setFinishedCountdown] = useState(false);
-  const [countdown, setCountdown] = useState(10);
+  const [countdown, setCountdown] = useState(4);
   const [error, setError] = useState("");
   const sendingVideoRef = useRef<HTMLVideoElement>(null);
   const incomingVideoRef = useRef<HTMLVideoElement>(null);
@@ -60,18 +59,24 @@ export const Live = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    if (live.type === "going")
+    if (live.type === "going" && !finishedCountdown)
       countdownRef.current = setTimeout(() => {
         setCountdown(countdown - 1);
       }, 1000);
   });
+console.log(countdownRef.current)
+  useEffect(() => {
+    if (live.type === "going") {
+      socket.emit("goinglive", entered, me.name);
+    }
+  }, []);
 
   useEffect(() => {
-    if (countdown == 0 && countdownRef.current) {
+    if (countdown == 0 && countdownRef.current && live.type === "going") {
       setFinishedCountdown(true);
       clearTimeout(countdownRef.current);
     }
-  }, [countdown]);
+  }, [countdown, live]);
 
   useEffect(() => {
     async function getMedia() {
@@ -80,10 +85,13 @@ export const Live = () => {
           video: true,
           audio: true,
         });
+        rtcRef.current = createPeerConnection();
         if (sendingVideoRef.current) {
-          sendingVideoRef.current.srcObject = userMedia;
-          rtcRef.current = createPeerConnection();
           const rtc = rtcRef.current;
+          sendingVideoRef.current.srcObject = userMedia;
+          userMedia.getTracks().forEach((track) => {
+            rtc!.addTrack(track, userMedia);
+          });
           rtc.onicecandidate = (event) => {
             if (event.candidate) {
               socket.emit("sendingICE", event.candidate, entered, me.name);
@@ -93,7 +101,7 @@ export const Live = () => {
             try {
               const offer = await rtc!.createOffer();
               await rtc!.setLocalDescription(offer);
-              socket.emit("goingLive", rtc!.localDescription, entered, me.name);
+              socket.emit("live", rtc!.localDescription, entered, me.name);
             } catch (e) {
               reportError();
             }
@@ -101,9 +109,9 @@ export const Live = () => {
           rtc.ontrack = (event) => {
             sendingVideoRef.current!.srcObject = event.streams[0];
           };
-          userMedia.getTracks().forEach((track) => {
-            rtc!.addTrack(track, userMedia);
-          });
+          rtc.onconnectionstatechange = (e) => {
+            console.log(rtc.connectionState);
+          };
         }
       } catch (e) {
         setError("Error using webcam");
@@ -114,32 +122,35 @@ export const Live = () => {
 
   useEffect(() => {
     if (live.type === "incoming") {
-      rtcRef.current = createPeerConnection();
-      const rtc = rtcRef.current;
-      rtc.ontrack = (event) => {
-        incomingVideoRef.current &&
-          (incomingVideoRef.current.srcObject = event.streams[0]);
-      };
-      rtc.onconnectionstatechange = () => {
-        endLive(rtc, incomingVideoRef.current!, dispatch);
-      };
-      socket
-        .on(
-          "incomingLive",
-          async (sdp: RTCSessionDescription, sender: string) => {
+      try {
+        rtcRef.current = createPeerConnection();
+        const rtc = rtcRef.current;
+        rtc.ontrack = (event) => {
+          incomingVideoRef.current &&
+            (incomingVideoRef.current.srcObject = event.streams[0]);
+        };
+        rtc.onconnectionstatechange = (e) => {
+          console.log(rtc.connectionState);
+          //endLive(rtc, incomingVideoRef.current!, dispatch);
+        };
+        socket
+          .on("incomingLive", async (sdp: RTCSessionDescription) => {
             const desc = new RTCSessionDescription(sdp);
             await rtc.setRemoteDescription(desc);
-            await rtc.createAnswer();
-          }
-        )
-        .on("receivingICE", (cand: RTCIceCandidate, sender: string) => {
-          if (sender !== me.name) {
-            const candidate = new RTCIceCandidate(cand);
-            rtc.addIceCandidate(candidate);
-          }
-        });
+            const answer = await rtc.createAnswer();
+            await rtc.setLocalDescription(answer);
+          })
+          .on("receivingICE", (cand: RTCIceCandidate, sender: string) => {
+            if (sender !== me.name) {
+              const candidate = new RTCIceCandidate(cand);
+              rtc.addIceCandidate(candidate);
+            }
+          });
+      } catch (e) {
+        reportError();
+      }
     }
-  }, [live]);
+  }, []);
 
   function reportError() {
     setError("Error making live");

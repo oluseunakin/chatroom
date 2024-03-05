@@ -123,11 +123,16 @@ export function RoomComponent() {
             count: notification.count + 1,
           });
       })
-      .on("incomingLive", (sdp, sender: string) => {
-        sender !== me.name && dispatch(setLive({ laiver: sender, isLive: true, type: "incoming" }));
+      .on("setupLive", (sender: string) => {
+        if (sender !== me.name) {
+          dispatch(setLive({ laiver: sender, isLive: true, type: "incoming" }));
+        }
       });
+  }, []);
+
+  useEffect(() => {
     isMember && socket.emit("inroom", entered, me.name);
-  });
+  }, [isMember]);
 
   if (roomLoading) return <Spinner />;
 
@@ -268,7 +273,9 @@ export function RoomComponent() {
               </button>
               <button
                 onClick={() => {
-                  dispatch(setLive({laiver: me.name, type: "going", isLive: true}));
+                  dispatch(
+                    setLive({ laiver: me.name, type: "going", isLive: true })
+                  );
                 }}
               >
                 Go Live
